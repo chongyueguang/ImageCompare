@@ -160,6 +160,8 @@ public class MainForm extends JFrame {
         txt_mail = new JTextField();
         btn_old = new JButton();
         label3 = new JLabel();
+        jfilechooser1= new JFileChooser();
+        jfilechooser2= new JFileChooser();
 
         //======== this ========
         setTitle("\u73fe\u65b0\u6bd4\u8f03\u30c4\u30fc\u30eb");
