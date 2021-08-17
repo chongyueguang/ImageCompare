@@ -154,7 +154,7 @@ new FormModel {
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label5"
-				"text": new FormMessage( null, "label5.text" )
+				"text": "ファイル格納場所(現)"
 			} )
 			add( new FormComponent( "javax.swing.JButton" ) {
 				name: "btn_run"
