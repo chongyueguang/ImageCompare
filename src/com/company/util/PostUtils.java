@@ -31,8 +31,8 @@ public class PostUtils {
 
             HttpPost httpPost = new HttpPost(url);
             RequestConfig requestConfig = RequestConfig.custom()
-                    .setSocketTimeout(3000) //服务器响应超时时间
-                    .setConnectTimeout(3000) //连接服务器超时时间
+                    .setSocketTimeout(1000) //服务器响应超时时间
+                    .setConnectTimeout(1000) //连接服务器超时时间
                     .build();
 
             httpPost.setConfig(requestConfig);
@@ -40,7 +40,7 @@ public class PostUtils {
             StringEntity entity = new StringEntity(jsonObject.toString(), "utf-8");
            // UrlEncodedFormEntity entity = new UrlEncodedFormEntity(pairs, "utf-8");
             httpPost.setEntity(entity);
-            httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded");
+            httpPost.setHeader("Content-Type", "application/json");
             // 由客户端执行(发送)请求
             response = httpClient.execute(httpPost);
 
@@ -52,7 +52,7 @@ public class PostUtils {
                sListener.success(EntityUtils.toString(responseEntity));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+           // e.printStackTrace();
             fListener.fail();
         } finally {
             try {
@@ -69,23 +69,5 @@ public class PostUtils {
         }
     }
 
-    private static List<NameValuePair> generatePairs(Map<String, String> params) {
-        if (params == null || params.size() == 0) {
-            return Collections.emptyList();
-        }
-
-        List<NameValuePair> pairs = new ArrayList<>();
-        for (Map.Entry<String,String> entry : params.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            if (key == null) {
-                continue;
-            }
-
-            pairs.add(new BasicNameValuePair(key, value));
-        }
-
-        return pairs;
-    }
 
 }

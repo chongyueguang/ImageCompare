@@ -12,19 +12,21 @@ public class PostThreadService implements Runnable {
 
     private Semaphore semaphore;
     private JSONObject jsonData;
-    private CountDownLatch countDownLatch;
 
-    public PostThreadService(Semaphore semaphore, JSONObject jsonData, CountDownLatch countDownLatch) {
+    public PostThreadService(Semaphore semaphore, JSONObject jsonData) {
         this.semaphore = semaphore;
         this.jsonData = jsonData;
-        this.countDownLatch = countDownLatch;
     }
 
     @Override
     public void run() {
         try {
             semaphore.acquire();
-            PostUtils.postWithParams("http//;", jsonData, new SuccessListener() {
+            double ran = Math.random();
+            System.out.println(ran);
+            Thread.sleep((long) (ran * 10000));
+            System.out.println("线程" + Thread.currentThread().getName() +"进入，当前还可用" + semaphore.availablePermits() + "个线程");
+            PostUtils.postWithParams("http://192.168.8.11/api/diff;", jsonData, new SuccessListener() {
                 @Override
                 public void success(String result) {
                     System.out.println("success");
@@ -32,14 +34,13 @@ public class PostThreadService implements Runnable {
             }, new FailListener() {
                 @Override
                 public void fail() {
-                    System.out.println("fail");
+                    System.out.println("线程" + Thread.currentThread().getName() + "fail");
                 }
             });
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }finally {
             semaphore.release();
-            countDownLatch.countDown();
         }
     }
 }

@@ -59,12 +59,9 @@ public class MainForm extends JFrame {
 
     private void btnRunActionPerformed(ActionEvent e) throws IOException, InterruptedException {
         int concurrent = 3;//线程条数控制
-        int fileSize = 1;//每次获取数据的数量
+        //int fileSize = 1;//每次获取数据的数量
         ExecutorService executor = Executors.newCachedThreadPool();
         final Semaphore semaphore = new Semaphore(concurrent);
-        int start = 0;
-        int end = 0;
-        List<CompareFileModel> list = null;
 
         ArrayList<CompareFileModel> compareFileArr = FileUtils.getCompareFileArr(fMap, tMap);
         for (CompareFileModel compareFileModel : compareFileArr){ //遍历所有图片文件
@@ -116,35 +113,15 @@ public class MainForm extends JFrame {
             json.put("image2",imageReqInfoModelTo);
             json.put("settings",settingsModel);
 
-            end = start + fileSize;
-            if(end > compareFileArr.size()) {
-                end = compareFileArr.size();
-            }
-            list = compareFileArr.subList(start, end);
-            final CountDownLatch countDownLatch = new CountDownLatch(list.size());
-            if(list == null || list.size() == 0) {
-                //logger.info("没有查询到processOne需要处理的数据！");
-                return;
-            }
-            for (int i = 0; i < list.size(); i++) {
-                executor.execute(new PostThreadService(semaphore, json,countDownLatch));
-            }
-            countDownLatch.await();//线程阻塞,直到锁为0才释放，继续向下执行
-            start += fileSize;
-            //logger.info("lsit-size:===="+list.size());
-            Thread.sleep(60000);
-            while (list.size() == fileSize){
-                executor.shutdown();
-            }
+
+            executor.execute(new PostThreadService(semaphore, json));
         }
+        // 退出线程池
+        executor.shutdown();
 
     }
 
     private void btnStopActionPerformed(ActionEvent e) {
-    }
-
-    private void button1ActionPerformed(ActionEvent e) {
-        // TODO add your code here
     }
 
     private void initComponents() {
@@ -166,7 +143,6 @@ public class MainForm extends JFrame {
         txt_mail = new JTextField();
         btn_old = new JButton();
         label3 = new JLabel();
-
 
         //======== this ========
         setTitle("\u73fe\u65b0\u6bd4\u8f03\u30c4\u30fc\u30eb");
