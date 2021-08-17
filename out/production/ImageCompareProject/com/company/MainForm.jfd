@@ -1,0 +1,189 @@
+JFDML JFormDesigner: "7.0.4.0.360" Java: "11.0.7" encoding: "UTF-8"
+
+new FormModel {
+	"i18n.autoExternalize": true
+	"i18n.bundleName": "form"
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {seq l {space :64:64:p, par l {seq {comp label1:::::x, space :495:495:p}, seq t {par t {comp scrollPane1::l:::x, seq t {par c {comp label2::c:::x, comp label5::c:p:144:p, comp label4::c:p:144:p, comp label3::c:p:144:p}, space :::p, par l {comp txt_mail::c:::x, seq {par l {comp txt_old::l:p:262:p, comp txt_new:::p:262:p}, space :0:0:x}}, space :::p, par l {seq {comp btn_new:::p:62:p, space :p:5:p, comp btn_run:::p:62:p, space :::p, comp btn_stop:::p:62:p}, comp btn_old:::p:62:p}}}, space :p:42:p}}}}"
+			"$verticalGroup": "par l {seq {space :p:29:p, comp label1:::p:35:p, space :::p, par b {comp label2::b:p:30:p, comp txt_mail::b:p:29:p}, space :::p, par b {comp label5::b:p:29:p, comp btn_old::b:p::p, comp txt_old::b:p:29:p}, space :::p, par b {comp label4::b:p:29:p, comp btn_new::b:p::p, comp btn_run::b:p::p, comp btn_stop::b:p::p, comp txt_new::b:p:29:p}, space :::p, comp label3:::p:30:p, space :p:12:p, comp scrollPane1:::p:171:p, space ::37:x}}"
+		} ) {
+			name: "this"
+			"title": "現新比較ツール"
+			"resizable": false
+			"visible": true
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label1"
+				"text": "現新比較実施"
+				"background": new java.awt.Color( 51, 153, 255, 255 )
+				"font": new java.awt.Font( "Microsoft YaHei UI", 1, 16 )
+			} )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				add( new FormComponent( "javax.swing.JTable" ) {
+					name: "table1"
+					"autoResizeMode": 4
+					"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector {
+						add( new java.util.Vector {
+							add( null )
+							add( "" )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						} )
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						} )
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						} )
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						} )
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						} )
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						} )
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						} )
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						} )
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						} )
+					}, new java.util.Vector {
+						add( "実施者" )
+						add( "ステータス" )
+						add( "予測完了時間" )
+						add( "完了数/全体" )
+						add( "投入時間" )
+						add( "開始時間" )
+					}, new java.util.Vector {
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( class java.lang.Object )
+					}, new java.util.Vector {
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+					}, new java.util.Vector {
+						add( new com.jformdesigner.model.SwingTableColumn( null, 0, 60, 0, true ) )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+					} )
+					"gridColor": new java.awt.Color( 255, 255, 255, 255 )
+					"selectionForeground": new java.awt.Color( 255, 255, 255, 255 )
+					"foreground": new java.awt.Color( 255, 255, 255, 255 )
+					"border": new com.jformdesigner.model.SwingBorder( "EditorPane.border" )
+				} )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label2"
+				"text": "実施者（メール）"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "txt_old"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label4"
+				"text": "ファイル格納場所(新)"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "txt_new"
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btn_new"
+				"text": "参照"
+				"font": &Font0 new java.awt.Font( "Microsoft YaHei UI", 0, 12 )
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "button1ActionPerformed", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label5"
+				"text": new FormMessage( null, "label5.text" )
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btn_run"
+				"text": "実行"
+				"font": new java.awt.Font( "Microsoft YaHei UI", 0, 12 )
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "button1ActionPerformed", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btn_stop"
+				"text": "中止"
+				"font": new java.awt.Font( "Microsoft YaHei UI", 0, 12 )
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "button1ActionPerformed", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "txt_mail"
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btn_old"
+				"text": "参照"
+				"font": #Font0
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "button1ActionPerformed", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label3"
+				"text": "実施状況"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 30, 55 )
+			"size": new java.awt.Dimension( 705, 460 )
+		} )
+	}
+}
