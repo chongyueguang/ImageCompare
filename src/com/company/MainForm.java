@@ -148,6 +148,7 @@ public class MainForm extends JFrame {
     }
 
     private void initComponents() {
+
         jfilechooser1 = new JFileChooser();
         jfilechooser2 = new JFileChooser();
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -165,6 +166,7 @@ public class MainForm extends JFrame {
         txt_mail = new JTextField();
         btn_old = new JButton();
         label3 = new JLabel();
+
 
         //======== this ========
         setTitle("\u73fe\u65b0\u6bd4\u8f03\u30c4\u30fc\u30eb");
@@ -218,7 +220,7 @@ public class MainForm extends JFrame {
         //---- btn_new ----
         btn_new.setText("\u53c2\u7167");
         btn_new.setFont(new Font("Microsoft YaHei UI", Font.PLAIN, 12));
-        btn_new.addActionListener(e -> button1ActionPerformed(e));
+        btn_new.addActionListener(e -> btnNewActionPerformed(e));
 
         //---- label5 ----
         label5.setText("\u30d5\u30a1\u30a4\u30eb\u683c\u7d0d\u5834\u6240(\u73fe)");
@@ -226,17 +228,25 @@ public class MainForm extends JFrame {
         //---- btn_run ----
         btn_run.setText("\u5b9f\u884c");
         btn_run.setFont(new Font("Microsoft YaHei UI", Font.PLAIN, 12));
-        btn_run.addActionListener(e -> button1ActionPerformed(e));
+        btn_run.addActionListener(e -> {
+            try {
+                btnRunActionPerformed(e);
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            } catch (InterruptedException interruptedException) {
+                interruptedException.printStackTrace();
+            }
+        });
 
         //---- btn_stop ----
         btn_stop.setText("\u4e2d\u6b62");
         btn_stop.setFont(new Font("Microsoft YaHei UI", Font.PLAIN, 12));
-        btn_stop.addActionListener(e -> button1ActionPerformed(e));
+        btn_stop.addActionListener(e -> btnStopActionPerformed(e));
 
         //---- btn_old ----
         btn_old.setText("\u53c2\u7167");
         btn_old.setFont(new Font("Microsoft YaHei UI", Font.PLAIN, 12));
-        btn_old.addActionListener(e -> button1ActionPerformed(e));
+        btn_old.addActionListener(e -> btnOldActionPerformed(e));
 
         //---- label3 ----
         label3.setText("\u5b9f\u65bd\u72b6\u6cc1");
