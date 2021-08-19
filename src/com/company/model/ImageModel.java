@@ -1,28 +1,28 @@
 package com.company.model;
 
 public class ImageModel {
-    private Double itx;
-    private Double ity;
+    private Double ltx;
+    private Double lty;
     private Double rbx;
     private Double rby;
 
-    public Double getItx() {
-        return itx;
-    }
+    public Double getLtx() {
+		return ltx;
+	}
 
-    public void setItx(Double itx) {
-        this.itx = itx;
-    }
+	public void setLtx(Double ltx) {
+		this.ltx = ltx;
+	}
 
-    public Double getIty() {
-        return ity;
-    }
+	public Double getLty() {
+		return lty;
+	}
 
-    public void setIty(Double ity) {
-        this.ity = ity;
-    }
+	public void setLty(Double lty) {
+		this.lty = lty;
+	}
 
-    public Double getRbx() {
+	public Double getRbx() {
         return rbx;
     }
 

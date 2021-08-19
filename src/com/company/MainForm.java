@@ -70,13 +70,13 @@ public class MainForm extends JFrame {
             String imageBase64To = ImageChangeUtils.imageToBase64ByFile(compareFileModel.getToFile());
             //TODO IgnoreAreas为假数据
             ImageModel imageModelFrom1 = new ImageModel();
-            imageModelFrom1.setItx(0.15);
-            imageModelFrom1.setIty(0.18);
+            imageModelFrom1.setLtx(0.15);
+            imageModelFrom1.setLty(0.18);
             imageModelFrom1.setRbx(0.19);
             imageModelFrom1.setRby(0.22);
             ImageModel imageModelFrom2 = new ImageModel();
-            imageModelFrom2.setItx(0.35);
-            imageModelFrom2.setIty(0.38);
+            imageModelFrom2.setLtx(0.35);
+            imageModelFrom2.setLty(0.38);
             imageModelFrom2.setRbx(0.39);
             imageModelFrom2.setRby(0.32);
             ArrayList<ImageModel> imageModelFroms = new ArrayList<>();
@@ -87,13 +87,13 @@ public class MainForm extends JFrame {
             imageReqInfoModelFrom.setIgnoreAreas(imageModelFroms);
 
             ImageModel imageModelTo1 = new ImageModel();
-            imageModelTo1.setItx(0.15);
-            imageModelTo1.setIty(0.18);
+            imageModelTo1.setLtx(0.15);
+            imageModelTo1.setLty(0.18);
             imageModelTo1.setRbx(0.19);
             imageModelTo1.setRby(0.22);
             ImageModel imageModelTo2 = new ImageModel();
-            imageModelTo2.setItx(0.35);
-            imageModelTo2.setIty(0.38);
+            imageModelTo2.setLtx(0.35);
+            imageModelTo2.setLty(0.38);
             imageModelTo2.setRbx(0.39);
             imageModelTo2.setRby(0.32);
             ArrayList<ImageModel> imageModelTos = new ArrayList<>();

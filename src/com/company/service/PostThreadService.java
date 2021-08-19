@@ -1,11 +1,16 @@
 package com.company.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.company.model.ImageResponseModel;
+import com.company.model.ResultInfoModel;
 import com.company.net.FailListener;
 import com.company.net.SuccessListener;
+import com.company.util.LogUtils;
 import com.company.util.PostUtils;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 public class PostThreadService implements Runnable {
@@ -22,23 +27,23 @@ public class PostThreadService implements Runnable {
     public void run() {
         try {
             semaphore.acquire();
-            double ran = Math.random();
-            System.out.println(ran);
-            Thread.sleep((long) (ran * 10000));
-            System.out.println("线程" + Thread.currentThread().getName() +"进入，当前还可用" + semaphore.availablePermits() + "个线程");
-            PostUtils.postWithParams("http://192.168.8.11/api/diff;", jsonData, new SuccessListener() {
+            LogUtils.info("线程：" + Thread.currentThread().getName() +"进行中，可用残余线程数：" + semaphore.availablePermits());
+            PostUtils.postWithParams("http://192.168.8.11/api/diff", jsonData, new SuccessListener() {
                 @Override
                 public void success(String result) {
-                    System.out.println("success");
+                    LogUtils.info("线程："  + Thread.currentThread().getName() + "返信成功");
+                    JSONObject datas = JSONObject.parseObject(result);
+                    ResultInfoModel resultInfoModel  = datas.toJavaObject(ResultInfoModel.class);
+                    resultInfoModel.getData().getDiffImage1();
                 }
             }, new FailListener() {
                 @Override
                 public void fail() {
-                    System.out.println("线程" + Thread.currentThread().getName() + "fail");
+                    LogUtils.error("线程："  + Thread.currentThread().getName() + "返信失败");
                 }
             });
         } catch (InterruptedException e) {
-            //e.printStackTrace();
+            LogUtils.error("线程："  + Thread.currentThread().getName() + "执行时，问题发生：" + e.getMessage());
         }finally {
             semaphore.release();
         }

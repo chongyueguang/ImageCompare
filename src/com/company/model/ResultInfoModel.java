@@ -2,27 +2,19 @@ package com.company.model;
 
 public class ResultInfoModel {
 
-    private boolean status;
-    private Object data;
+    private ImageResponseModel data;
     private String message;
 
-    public boolean isStatus() {
-        return status;
-    }
 
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
+    public ImageResponseModel getData() {
+		return data;
+	}
 
-    public Object getData() {
-        return data;
-    }
+	public void setData(ImageResponseModel data) {
+		this.data = data;
+	}
 
-    public void setData(Object data) {
-        this.data = data;
-    }
-
-    public String getMessage() {
+	public String getMessage() {
         return message;
     }
 
@@ -30,12 +22,4 @@ public class ResultInfoModel {
         this.message = message;
     }
 
-    @Override
-    public String toString() {
-        return "ResultInfo{" +
-                "status=" + status +
-                ", data=" + data +
-                ", message='" + message + '\'' +
-                '}';
-    }
 }
