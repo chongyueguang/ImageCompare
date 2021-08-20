@@ -6,6 +6,7 @@ import com.company.net.FailListener;
 import com.company.net.SuccessListener;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -42,7 +43,7 @@ public class PostUtils {
             // 从响应模型中获取响应实体
             HttpEntity responseEntity = response.getEntity();
             //TODO
-            Header[] allHeaders = response.getAllHeaders();
+            LogUtils.warn("status:"+response.getStatusLine());
 
             if (responseEntity != null) {
                sListener.success(EntityUtils.toString(responseEntity));
