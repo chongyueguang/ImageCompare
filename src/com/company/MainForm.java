@@ -18,13 +18,13 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import com.alibaba.fastjson.JSONObject;
-import com.company.model.CompareFileModel;
-import com.company.model.ImageModel;
-import com.company.model.ImageReqInfoModel;
-import com.company.model.SettingsModel;
+import com.company.dao.TblJobInfoDao;
+import com.company.model.*;
 import com.company.service.PostThreadService;
+import com.company.service.TblJobInfoService;
 import com.company.util.FileUtils;
 import com.company.util.ImageChangeUtils;
+import com.company.util.LogUtils;
 
 /**
  * @author 1
@@ -42,7 +42,9 @@ public class MainForm extends JFrame {
             File f = jfilechooser1.getSelectedFile();
             txt_old.setText(f.getAbsolutePath());
             fMap = new HashMap<>();
-            fMap = FileUtils.getAllPngFiles(fMap,f,f.getAbsolutePath());
+            Properties properties = FileUtils.getProperties(f);
+            fMap = FileUtils.getAllPngFiles(fMap,f,f.getAbsolutePath(),properties);
+
         }
     }
 
@@ -53,11 +55,29 @@ public class MainForm extends JFrame {
             File f = jfilechooser2.getSelectedFile();
             txt_new.setText(f.getAbsolutePath());
             tMap = new HashMap<>();
-            tMap = FileUtils.getAllPngFiles(tMap,f,f.getAbsolutePath());
+            Properties properties = FileUtils.getProperties(f);
+            tMap = FileUtils.getAllPngFiles(tMap,f,f.getAbsolutePath(),properties);
         }
     }
 
     private void btnRunActionPerformed(ActionEvent e) throws IOException, InterruptedException {
+        //创建RESULT文件夹
+        File fileCompare = new File(txt_new.getText()+"\\RESULT\\比較結果");
+        if(!fileCompare.mkdirs()){
+            LogUtils.error("比較結果Folder作成失敗");
+            return;
+        }
+        File fileOldEvidence = new File(txt_new.getText()+"\\RESULT\\実行完了現エビデンス");
+        if(!fileOldEvidence.mkdirs()){
+            LogUtils.error("実行完了現エビデンスFolder作成失敗");
+            return;
+        }
+        File fileNewEvidence = new File(txt_new.getText()+"\\RESULT\\実行完了新エビデンス");
+        if(!fileNewEvidence.mkdirs()){
+            LogUtils.error("実行完了新エビデンスFolder作成失敗");
+            return;
+        }
+
         int concurrent = 3;//线程条数控制
         //int fileSize = 1;//每次获取数据的数量
         ExecutorService executor = Executors.newCachedThreadPool();
@@ -68,40 +88,15 @@ public class MainForm extends JFrame {
             //对图片文件进行转码
             String imageBase64From = ImageChangeUtils.imageToBase64ByFile(compareFileModel.getFromFile());
             String imageBase64To = ImageChangeUtils.imageToBase64ByFile(compareFileModel.getToFile());
-            //TODO IgnoreAreas为假数据
-            ImageModel imageModelFrom1 = new ImageModel();
-            imageModelFrom1.setLtx(0.15);
-            imageModelFrom1.setLty(0.18);
-            imageModelFrom1.setRbx(0.19);
-            imageModelFrom1.setRby(0.22);
-            ImageModel imageModelFrom2 = new ImageModel();
-            imageModelFrom2.setLtx(0.35);
-            imageModelFrom2.setLty(0.38);
-            imageModelFrom2.setRbx(0.39);
-            imageModelFrom2.setRby(0.32);
-            ArrayList<ImageModel> imageModelFroms = new ArrayList<>();
-            imageModelFroms.add(imageModelFrom1);
-            imageModelFroms.add(imageModelFrom2);
+
             ImageReqInfoModel imageReqInfoModelFrom = new ImageReqInfoModel();
             imageReqInfoModelFrom.setData(imageBase64From);
-            imageReqInfoModelFrom.setIgnoreAreas(imageModelFroms);
+            imageReqInfoModelFrom.setIgnoreAreas(compareFileModel.getFromImageModel());
 
-            ImageModel imageModelTo1 = new ImageModel();
-            imageModelTo1.setLtx(0.15);
-            imageModelTo1.setLty(0.18);
-            imageModelTo1.setRbx(0.19);
-            imageModelTo1.setRby(0.22);
-            ImageModel imageModelTo2 = new ImageModel();
-            imageModelTo2.setLtx(0.35);
-            imageModelTo2.setLty(0.38);
-            imageModelTo2.setRbx(0.39);
-            imageModelTo2.setRby(0.32);
-            ArrayList<ImageModel> imageModelTos = new ArrayList<>();
-            imageModelTos.add(imageModelTo1);
-            imageModelTos.add(imageModelTo2);
             ImageReqInfoModel imageReqInfoModelTo = new ImageReqInfoModel();
             imageReqInfoModelTo.setData(imageBase64To);
-            imageReqInfoModelTo.setIgnoreAreas(imageModelTos);
+            imageReqInfoModelTo.setIgnoreAreas(compareFileModel.getToImageModel());
+
             SettingsModel settingsModel = new SettingsModel();
             settingsModel.setConfThres(0);
             settingsModel.setIouThres(0);
@@ -114,7 +109,7 @@ public class MainForm extends JFrame {
             json.put("settings",settingsModel);
 
 
-            executor.execute(new PostThreadService(semaphore, json));
+            executor.execute(new PostThreadService(semaphore, json,compareFileModel.getFromFile(),compareFileModel.getToFile(),txt_new.getText()));
         }
         // 退出线程池
         executor.shutdown();
@@ -131,7 +126,7 @@ public class MainForm extends JFrame {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         label1 = new JLabel();
         scrollPane1 = new JScrollPane();
-        table1 = new JTable();
+        //table1 = new JTable();
         label2 = new JLabel();
         txt_old = new JTextField();
         label4 = new JLabel();
@@ -159,23 +154,34 @@ public class MainForm extends JFrame {
         {
 
             //---- table1 ----
+            TblJobInfoService tblJobInfoService = new TblJobInfoService();
+            Vector<String> column = new Vector<>();
+            column.add("\u5b9f\u65bd\u8005");
+            column.add("\u30b9\u30c6\u30fc\u30bf\u30b9");
+            column.add("\u4e88\u6e2c\u5b8c\u4e86\u6642\u9593");
+            column.add("\u5b8c\u4e86\u6570/\u5168\u4f53");
+            column.add("\u6295\u5165\u6642\u9593");
+            column.add("\u958b\u59cb\u6642\u9593");
+
+            table1 = new JTable(tblJobInfoService.getJobInfoByList(),column);
             table1.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-            table1.setModel(new DefaultTableModel(
-                new Object[][] {
-                    {null, "", null, null, null, null},
-                    {null, null, null, null, null, null},
-                    {null, null, null, null, null, null},
-                    {null, null, null, null, null, null},
-                    {null, null, null, null, null, null},
-                    {null, null, null, null, null, null},
-                    {null, null, null, null, null, null},
-                    {null, null, null, null, null, null},
-                    {null, null, null, null, null, null},
-                },
-                new String[] {
-                    "\u5b9f\u65bd\u8005", "\u30b9\u30c6\u30fc\u30bf\u30b9", "\u4e88\u6e2c\u5b8c\u4e86\u6642\u9593", "\u5b8c\u4e86\u6570/\u5168\u4f53", "\u6295\u5165\u6642\u9593", "\u958b\u59cb\u6642\u9593"
-                }
-            ));
+
+//            table1.setModel(new DefaultTableModel(
+//                new Object[][] {
+//                    {null, "", null, null, null, null},
+//                    {null, null, null, null, null, null},
+//                    {null, null, null, null, null, null},
+//                    {null, null, null, null, null, null},
+//                    {null, null, null, null, null, null},
+//                    {null, null, null, null, null, null},
+//                    {null, null, null, null, null, null},
+//                    {null, null, null, null, null, null},
+//                    {null, null, null, null, null, null},
+//                },
+//                new String[] {
+//                    "\u5b9f\u65bd\u8005", "\u30b9\u30c6\u30fc\u30bf\u30b9", "\u4e88\u6e2c\u5b8c\u4e86\u6642\u9593", "\u5b8c\u4e86\u6570/\u5168\u4f53", "\u6295\u5165\u6642\u9593", "\u958b\u59cb\u6642\u9593"
+//                }
+//            ));
             {
                 TableColumnModel cm = table1.getColumnModel();
                 cm.getColumn(0).setMinWidth(60);
@@ -315,6 +321,6 @@ public class MainForm extends JFrame {
     // JFormDesigner - End of variables declaration  //GEN-END:variables
     private JFileChooser jfilechooser1;
     private JFileChooser jfilechooser2;
-    private HashMap<String, File> fMap;
-    private HashMap<String, File> tMap;
+    private HashMap<String, ImageAttributeModel> fMap;
+    private HashMap<String, ImageAttributeModel> tMap;
 }

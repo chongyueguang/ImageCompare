@@ -1,9 +1,16 @@
 package com.company.util;
 
 import com.company.model.CompareFileModel;
+import com.company.model.ImageAttributeModel;
+import com.company.model.ImageModel;
 
-import java.io.File;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.MalformedURLException;
 import java.util.*;
+import java.util.List;
 
 public class FileUtils {
 
@@ -14,14 +21,17 @@ public class FileUtils {
      * @param path 指定根路径
      * @return 以文件相对路径为key，文件为value的集合
      */
-    public static HashMap<String, File> getAllPngFiles(HashMap<String,File> fileHashMap,File file,String path){
+    public static HashMap<String, ImageAttributeModel> getAllPngFiles(HashMap<String, ImageAttributeModel> fileHashMap, File file, String path,Properties pro){
         File[] listFiles = file.listFiles();
         for (File f:listFiles) {
             if(f.isDirectory()){
-                getAllPngFiles(fileHashMap,f,path);
+                getAllPngFiles(fileHashMap,f,path,pro);
             }
             if (f.isFile()&&f.getName().toLowerCase().endsWith(".png")){
-                fileHashMap.put(f.getAbsolutePath().replace(path,""),f);
+                ImageAttributeModel imageAttributeModel = new ImageAttributeModel();
+                imageAttributeModel.setFile(f);
+                imageAttributeModel.setImageModel(FileUtils.readProToModel(pro,f));
+                fileHashMap.put(f.getAbsolutePath().replace(path,""),imageAttributeModel);
             }
         }
         return fileHashMap;
@@ -33,7 +43,7 @@ public class FileUtils {
      * @param tMap
      * @return
      */
-    public static ArrayList<CompareFileModel> getCompareFileArr(HashMap<String,File> fMap, HashMap<String,File> tMap){
+    public static ArrayList<CompareFileModel> getCompareFileArr(HashMap<String,ImageAttributeModel> fMap, HashMap<String,ImageAttributeModel> tMap){
         ArrayList<CompareFileModel> arrayList = new ArrayList<CompareFileModel>();
         Set fSet = fMap.entrySet();
         Iterator fIt = fSet.iterator();
@@ -42,12 +52,74 @@ public class FileUtils {
             if(tMap.containsKey(fEntry.getKey())){
                 CompareFileModel compareFileModel = new CompareFileModel();
                 compareFileModel.setKey(fEntry.getKey().toString());
-                compareFileModel.setFromFile(fMap.get(fEntry.getKey()));
-                compareFileModel.setToFile(tMap.get(fEntry.getKey()));
+                compareFileModel.setFromFile(fMap.get(fEntry.getKey()).getFile());
+                compareFileModel.setToFile(tMap.get(fEntry.getKey()).getFile());
+                compareFileModel.setFromImageModel(fMap.get(fEntry.getKey()).getImageModel());
+                compareFileModel.setToImageModel(tMap.get(fEntry.getKey()).getImageModel());
                 arrayList.add(compareFileModel);
             }
         }
         return arrayList;
+    }
+
+    public static Properties getProperties(File file){
+        File[] listFiles = file.listFiles();
+        for (File f:listFiles) {
+            if("ignoreAreas.properties".equals(f.getName())){
+                Properties prop = null;
+                try {
+                    InputStream reader = new FileInputStream(f);
+                    BufferedReader br = new BufferedReader(
+                            new InputStreamReader(reader));
+                    prop = new Properties();
+                    prop.load(br);
+                    br.close();
+                    return prop;
+                } catch (MalformedURLException mue) {
+                    mue.printStackTrace();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+    public static List<ImageModel> readProToModel(Properties pro,File file){
+        try {
+            Iterator it=pro.entrySet().iterator();
+            while(it.hasNext()){
+                Map.Entry entry=(Map.Entry)it.next();
+                Object key = entry.getKey();
+                Object value = entry.getValue();
+                String matchKey = key.toString().replace("*",".*");
+                if (file.getName().matches(matchKey)){
+                    String[] split = value.toString().split("],");
+                    List<ImageModel> imageModels = new ArrayList<>();
+                    for (int i = 0;i <= split.length;i++){
+                        String[] split1 = split[i].replace("[", "").split(",");
+                        if (split1.length == 4){
+                            ImageModel imageModel = new ImageModel();
+                            BufferedImage image = null;
+                            try {
+                                image = ImageIO.read(file);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            imageModel.setLtx(Double.parseDouble(split1[0])/image.getWidth());
+                            imageModel.setLty(Double.parseDouble(split1[1])/image.getHeight());
+                            imageModel.setRbx(Double.parseDouble(split1[2])/image.getWidth());
+                            imageModel.setRby(Double.parseDouble(split1[3])/image.getHeight());
+                            imageModels.add(imageModel);
+                        }
+                    }
+                    return imageModels;
+                }
+            }
+        }catch (Exception e){
+            LogUtils.error(e.getMessage());
+        }
+        return null;
     }
 
 }

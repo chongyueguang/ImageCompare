@@ -1,9 +1,15 @@
 package com.company.util;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import Decoder.BASE64Decoder;
 import Decoder.BASE64Encoder;
+
+import javax.imageio.ImageIO;
 
 public class ImageChangeUtils {
 
@@ -61,6 +67,41 @@ public class ImageChangeUtils {
             return true;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    public static void joinImage(File fromFile,File toFile,String path){
+        try {
+            Integer allWidth = 0;	// 图片总宽度
+            Integer w1 = 0;	// 图片1宽度
+            Integer w2 = 0;	// 图片2宽度
+            Integer h1 = 0;	// 图片1高度
+            Integer h2 = 0;	// 图片2高度
+
+            BufferedImage fromRead = ImageIO.read(fromFile);
+            BufferedImage toRead = ImageIO.read(toFile);
+            w1 = fromRead.getWidth();
+            w2 = toRead.getWidth();
+            allWidth = w1 + w2;
+            h1 = fromRead.getHeight();
+            h2 = toRead.getHeight();
+            int hh = h1 > h2 ? h1 : h2;
+
+            BufferedImage combined = new BufferedImage(allWidth, hh, BufferedImage.TYPE_INT_RGB);
+            Graphics g = combined.getGraphics();
+//            g.setColor(Color.WHITE);
+//            g.fillRect(0,0,allWidth,hh);
+
+            // 横向合成
+            g.drawImage(fromRead, 0, 0, null);
+//          g.setColor(Color.BLACK);
+            g.drawRect(w1, 0, w1, hh);
+            g.drawImage(toRead, w1, 0, null);
+
+            ImageIO.write(combined, "png", new File(path));
+        } catch (Exception e) {
+            //e.printStackTrace();
+            LogUtils.error(e.getMessage());
         }
     }
 }

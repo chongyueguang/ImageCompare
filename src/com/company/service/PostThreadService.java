@@ -9,6 +9,7 @@ import com.company.net.SuccessListener;
 import com.company.util.LogUtils;
 import com.company.util.PostUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -17,10 +18,16 @@ public class PostThreadService implements Runnable {
 
     private Semaphore semaphore;
     private JSONObject jsonData;
+    private File fromFile;
+    private File toFile;
+    private String newFolderPath;
 
-    public PostThreadService(Semaphore semaphore, JSONObject jsonData) {
+    public PostThreadService(Semaphore semaphore, JSONObject jsonData, File fromFile, File toFile,String newFolderPath) {
         this.semaphore = semaphore;
         this.jsonData = jsonData;
+        this.fromFile = fromFile;
+        this.toFile = toFile;
+        this.newFolderPath = newFolderPath;
     }
 
     @Override
@@ -35,6 +42,14 @@ public class PostThreadService implements Runnable {
                     JSONObject datas = JSONObject.parseObject(result);
                     ResultInfoModel resultInfoModel  = datas.toJavaObject(ResultInfoModel.class);
                     resultInfoModel.getData().getDiffImage1();
+                    resultInfoModel.getData().getDiffImage2();
+
+                    try {
+                        fromFile.renameTo(new File( newFolderPath +"\\RESULT\\実行完了現エビデンス\\"+ toFile.getPath() + "\\" + toFile.getName()));
+                        toFile.renameTo(new File( newFolderPath +"\\RESULT\\実行完了新エビデンス\\"+ toFile.getPath() + "\\" + toFile.getName()));
+                    }catch (Exception e){
+                        LogUtils.error(e.getMessage());
+                    }
                 }
             }, new FailListener() {
                 @Override
