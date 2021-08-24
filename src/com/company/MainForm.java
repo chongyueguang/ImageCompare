@@ -9,22 +9,21 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.table.*;
 
 import com.alibaba.fastjson.JSONObject;
-import com.company.dao.TblJobInfoDao;
 import com.company.model.*;
 import com.company.service.PostThreadService;
 import com.company.service.TblJobInfoService;
 import com.company.util.FileUtils;
 import com.company.util.ImageChangeUtils;
 import com.company.util.LogUtils;
+import com.company.util.TimerUtils;
 
 /**
  * @author 1
@@ -162,35 +161,23 @@ public class MainForm extends JFrame {
             column.add("\u5b8c\u4e86\u6570/\u5168\u4f53");
             column.add("\u6295\u5165\u6642\u9593");
             column.add("\u958b\u59cb\u6642\u9593");
+            column.add("\u66f4\u65b0\u6642\u9593");
 
             table1 = new JTable(tblJobInfoService.getJobInfoByList(),column);
             table1.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-//            table1.setModel(new DefaultTableModel(
-//                new Object[][] {
-//                    {null, "", null, null, null, null},
-//                    {null, null, null, null, null, null},
-//                    {null, null, null, null, null, null},
-//                    {null, null, null, null, null, null},
-//                    {null, null, null, null, null, null},
-//                    {null, null, null, null, null, null},
-//                    {null, null, null, null, null, null},
-//                    {null, null, null, null, null, null},
-//                    {null, null, null, null, null, null},
-//                },
-//                new String[] {
-//                    "\u5b9f\u65bd\u8005", "\u30b9\u30c6\u30fc\u30bf\u30b9", "\u4e88\u6e2c\u5b8c\u4e86\u6642\u9593", "\u5b8c\u4e86\u6570/\u5168\u4f53", "\u6295\u5165\u6642\u9593", "\u958b\u59cb\u6642\u9593"
-//                }
-//            ));
             {
                 TableColumnModel cm = table1.getColumnModel();
                 cm.getColumn(0).setMinWidth(60);
             }
-            table1.setGridColor(Color.white);
+
+            table1.setGridColor(Color.black);
             table1.setSelectionForeground(Color.white);
-            table1.setForeground(Color.white);
+            table1.setForeground(Color.black);
             table1.setBorder(UIManager.getBorder("EditorPane.border"));
             scrollPane1.setViewportView(table1);
+            //刷新画面定时器
+            TimerUtils.refreshScreenTimer(scrollPane1,table1,column);
         }
 
         //---- label2 ----
