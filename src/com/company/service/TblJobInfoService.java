@@ -1,38 +1,43 @@
 package com.company.service;
 
-import com.company.bean.JTableInfoBean;
 import com.company.dao.TblJobInfoDao;
 import com.company.entity.TblJobInfoEntity;
-import com.sun.corba.se.spi.ior.ObjectKey;
+import com.company.util.LogUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
 public class TblJobInfoService {
+    /* タイムアウト時間(単位：秒) */
+    private final int jobTblTimeOut = 65;
 
-    public Vector<Vector<Object>> getJobInfoByList(){
+    private TblJobInfoDao tblJobInfoDao;
+
+    public Vector<Vector<Object>> getJobInfoByListToVector(){
         Vector<Vector<Object>> jTableInfoBeans = new Vector<>();
 
-        TblJobInfoDao tblJobInfoDao = new TblJobInfoDao();
+        tblJobInfoDao = new TblJobInfoDao();
         List<TblJobInfoEntity> jobInfoByTbl = tblJobInfoDao.getJobInfoByTbl();
         for (TblJobInfoEntity tblJobInfoEntity :jobInfoByTbl) {
             Vector<Object> jTableInfoBeanVector = new Vector<Object>();
-            //JTableInfoBean jTableInfoBean = new JTableInfoBean();
             //邮箱
             jTableInfoBeanVector.add(tblJobInfoEntity.getMail_address());
             //状态
             switch (tblJobInfoEntity.getStatus()){
                 case 1:
                     jTableInfoBeanVector.add("実行中");
+                    break;
                 case 2:
                     jTableInfoBeanVector.add("実行待ち");
+                    break;
                 case 3:
                     jTableInfoBeanVector.add("完了");
+                    break;
                 case 4:
                     jTableInfoBeanVector.add("エラー");
+                    break;
             }
             //预测时间
             if(tblJobInfoEntity.getStatus() != 1 ){
@@ -58,5 +63,31 @@ public class TblJobInfoService {
             jTableInfoBeans.add(jTableInfoBeanVector);
         }
         return  jTableInfoBeans;
+    }
+
+    public void updateJobInfoStatusByTime(){
+        tblJobInfoDao = new TblJobInfoDao();
+        List<TblJobInfoEntity> jobInfoByTbl = tblJobInfoDao.getJobInfoByTbl();
+        for (TblJobInfoEntity tblJobInfoEntity:jobInfoByTbl) {
+            long nowTime = System.currentTimeMillis();
+            long updTime = tblJobInfoEntity.getUpdate_time().getTime();
+            long runTime = nowTime - updTime;
+            if (runTime/1000 > jobTblTimeOut && (tblJobInfoEntity.getStatus()==1)){
+                boolean updFlg = tblJobInfoDao.updateJobTblToStart(tblJobInfoEntity.getJob_id());
+                LogUtils.info("Job_id："+tblJobInfoEntity.getJob_id()+"运行时间过长，状态更新结果：" + updFlg);
+            }
+        }
+    }
+
+    public int insertJobInfoByJobID(String mailAddress,int totalCount){
+        tblJobInfoDao = new TblJobInfoDao();
+        int jobID = tblJobInfoDao.insertJobQueue(mailAddress, totalCount);
+        return jobID;
+    }
+
+    public int getJobInfoByJobID(int job_id){
+        tblJobInfoDao = new TblJobInfoDao();
+        int status = tblJobInfoDao.getStatusByJobID(job_id);
+        return status;
     }
 }

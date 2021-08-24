@@ -10,8 +10,6 @@ import com.company.util.LogUtils;
 import com.company.util.PostUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Semaphore;
 
 public class PostThreadService implements Runnable {

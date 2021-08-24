@@ -13,7 +13,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.table.*;
 
 import com.alibaba.fastjson.JSONObject;
@@ -23,7 +22,7 @@ import com.company.service.TblJobInfoService;
 import com.company.util.FileUtils;
 import com.company.util.ImageChangeUtils;
 import com.company.util.LogUtils;
-import com.company.util.TimerUtils;
+import com.company.service.TimerService;
 
 /**
  * @author 1
@@ -77,41 +76,17 @@ public class MainForm extends JFrame {
             return;
         }
 
-        int concurrent = 3;//线程条数控制
-        //int fileSize = 1;//每次获取数据的数量
-        ExecutorService executor = Executors.newCachedThreadPool();
-        final Semaphore semaphore = new Semaphore(concurrent);
 
+        //
         ArrayList<CompareFileModel> compareFileArr = FileUtils.getCompareFileArr(fMap, tMap);
-        for (CompareFileModel compareFileModel : compareFileArr){ //遍历所有图片文件
-            //对图片文件进行转码
-            String imageBase64From = ImageChangeUtils.imageToBase64ByFile(compareFileModel.getFromFile());
-            String imageBase64To = ImageChangeUtils.imageToBase64ByFile(compareFileModel.getToFile());
+        //
+        TblJobInfoService tblJobInfoService = new TblJobInfoService();
+        //插入数据
+        int jobID = tblJobInfoService.insertJobInfoByJobID(txt_mail.getText(), compareFileArr.size());
 
-            ImageReqInfoModel imageReqInfoModelFrom = new ImageReqInfoModel();
-            imageReqInfoModelFrom.setData(imageBase64From);
-            imageReqInfoModelFrom.setIgnoreAreas(compareFileModel.getFromImageModel());
-
-            ImageReqInfoModel imageReqInfoModelTo = new ImageReqInfoModel();
-            imageReqInfoModelTo.setData(imageBase64To);
-            imageReqInfoModelTo.setIgnoreAreas(compareFileModel.getToImageModel());
-
-            SettingsModel settingsModel = new SettingsModel();
-            settingsModel.setConfThres(0);
-            settingsModel.setIouThres(0);
-            settingsModel.setLevdThres(0);
-            settingsModel.setShiftThres(0);
-
-            JSONObject json = new JSONObject();
-            json.put("image1",imageReqInfoModelFrom);
-            json.put("image2",imageReqInfoModelTo);
-            json.put("settings",settingsModel);
+        TimerService.waitTimer(compareFileArr,txt_new,jobID);
 
 
-            executor.execute(new PostThreadService(semaphore, json,compareFileModel.getFromFile(),compareFileModel.getToFile(),txt_new.getText()));
-        }
-        // 退出线程池
-        executor.shutdown();
 
     }
 
@@ -163,7 +138,7 @@ public class MainForm extends JFrame {
             column.add("\u958b\u59cb\u6642\u9593");
             column.add("\u66f4\u65b0\u6642\u9593");
 
-            table1 = new JTable(tblJobInfoService.getJobInfoByList(),column);
+            table1 = new JTable(tblJobInfoService.getJobInfoByListToVector(),column);
             table1.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
             {
@@ -177,7 +152,7 @@ public class MainForm extends JFrame {
             table1.setBorder(UIManager.getBorder("EditorPane.border"));
             scrollPane1.setViewportView(table1);
             //刷新画面定时器
-            TimerUtils.refreshScreenTimer(scrollPane1,table1,column);
+            TimerService.refreshScreenTimer(scrollPane1,table1,column);
         }
 
         //---- label2 ----

@@ -1,11 +1,11 @@
-package com.company.util;
+package com.company.dao;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
 import java.util.Properties;
 
-public class JdbcUtils {
+public class JdbcBaseDao {
     // 定义 数据库驱动
     private static String driverClass;
     // 定义 数据库的连接
@@ -56,7 +56,7 @@ public class JdbcUtils {
      * 获取连接
      * @return: conn
      */
-    public static Connection getConnection(){
+    public Connection getConnection(){
         try {
             //连接类型  连接对象  =  驱动管理中的获取连接(连接，用户名，密码)
             Connection conn = DriverManager.getConnection(url,user,password);
@@ -73,7 +73,7 @@ public class JdbcUtils {
      * 传递三个参数: 结果集对象 ，处理Sql语句对象 , 连接对象
      * 无返回值状态
      */
-    public static void release(ResultSet rs, Statement stmt, Connection conn){
+    public void release(ResultSet rs, Statement stmt, Connection conn){
         //如果 结果集中不为空
         if(rs!=null){
             try {
