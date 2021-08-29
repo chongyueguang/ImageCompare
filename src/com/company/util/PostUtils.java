@@ -4,9 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.company.net.CookiesHolder;
 import com.company.net.FailListener;
 import com.company.net.SuccessListener;
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -49,8 +47,8 @@ public class PostUtils {
                sListener.success(EntityUtils.toString(responseEntity));
             }
         } catch (Exception e) {
-           // e.printStackTrace();
             LogUtils.error(e.getMessage());
+            //e.printStackTrace();
             fListener.fail();
         } finally {
             try {

@@ -6,8 +6,6 @@ import com.company.model.ImageReqInfoModel;
 import com.company.model.ResultInfoModel;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.Hyperlink;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import javax.swing.*;

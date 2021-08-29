@@ -42,21 +42,33 @@ public class TblJobInfoService {
             if(tblJobInfoEntity.getStatus() != 1 ){
                 jTableInfoBeanVector.add("0");
             }else {
-                long nowTime = System.currentTimeMillis();
-                long startTime = tblJobInfoEntity.getStart_time().getTime();
-                long runTime = nowTime - startTime;
-                long predictionEndTime = runTime/tblJobInfoEntity.getKannsei_num()*(tblJobInfoEntity.getGamen_num()-tblJobInfoEntity.getKannsei_num())/1000;
-                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-                jTableInfoBeanVector.add(sdf.format(new Date(predictionEndTime)));
+                if(tblJobInfoEntity.getKannsei_num() != 0){
+                    long nowTime = System.currentTimeMillis();
+                    long startTime = tblJobInfoEntity.getStart_time().getTime();
+                    long runTime = nowTime - startTime;
+                    long predictionEndTime = runTime/tblJobInfoEntity.getKannsei_num()*(tblJobInfoEntity.getGamen_num()-tblJobInfoEntity.getKannsei_num())/1000;
+                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+                    jTableInfoBeanVector.add(sdf.format(new Date(predictionEndTime)));
+                }else {
+                    jTableInfoBeanVector.add("");
+                }
             }
             //完了比例
             jTableInfoBeanVector.add(tblJobInfoEntity.getKannsei_num()+"/"+tblJobInfoEntity.getGamen_num());
             //投入时间
             jTableInfoBeanVector.add(tblJobInfoEntity.getRegist_time().toString());
             //开始时间
-            jTableInfoBeanVector.add(tblJobInfoEntity.getStart_time().toString());
+            if(tblJobInfoEntity.getStart_time() != null){
+                jTableInfoBeanVector.add(tblJobInfoEntity.getStart_time().toString());
+            }else {
+                jTableInfoBeanVector.add("");
+            }
             //更新时间
-            jTableInfoBeanVector.add(tblJobInfoEntity.getUpdate_time().toString());
+            if(tblJobInfoEntity.getUpdate_time() != null){
+                jTableInfoBeanVector.add(tblJobInfoEntity.getUpdate_time().toString());
+            }else {
+                jTableInfoBeanVector.add("");
+            }
 
             jTableInfoBeanVector.add(jTableInfoBeanVector);
             jTableInfoBeans.add(jTableInfoBeanVector);
@@ -101,5 +113,19 @@ public class TblJobInfoService {
     public void updateJobInfoEndTimeByJobIDForStop(int job_id,int kannSeiNum){
         tblJobInfoDao = new TblJobInfoDao();
         tblJobInfoDao.updateJobTblForStop(job_id,kannSeiNum);
+    }
+
+    public Boolean getJobInfoStatus(int job_id){
+        boolean runFlg = true;
+        tblJobInfoDao = new TblJobInfoDao();
+        List<TblJobInfoEntity> jobInfoByTbl = tblJobInfoDao.getJobInfoByTbl();
+        for (TblJobInfoEntity tblJobInfoEntity :jobInfoByTbl) {
+            if(tblJobInfoEntity.getJob_id() != job_id){
+                if(tblJobInfoEntity.getStatus() == 1 || tblJobInfoEntity.getStatus() == 2){
+                    runFlg = false;
+                }
+            }
+        }
+        return runFlg;
     }
 }

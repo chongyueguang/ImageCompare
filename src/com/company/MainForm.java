@@ -23,8 +23,6 @@ import com.company.service.TimerService;
  */
 public class MainForm extends JFrame {
 
-    //private int jobID = 0;
-
     public MainForm() {
         initComponents();
     }
@@ -45,7 +43,6 @@ public class MainForm extends JFrame {
             Properties properties = FileUtils.getProperties(f);
             //全体pngファイルを取得
             fMap = FileUtils.getAllPngFiles(fMap,f,f.getAbsolutePath(),properties);
-
         }
     }
 
@@ -109,7 +106,7 @@ public class MainForm extends JFrame {
             return;
         }
         String oldFolder = txt_old.getText();
-        oldFolder = oldFolder.substring(oldFolder.lastIndexOf("\\"),oldFolder.length()-1) ;
+        oldFolder = oldFolder.substring(oldFolder.lastIndexOf("\\"),oldFolder.length()) ;
         File fileOldEvidence = new File(txt_new.getText()+"\\RESULT\\"+oldFolder);
         if((!fileOldEvidence.exists()) && (!fileOldEvidence.mkdirs())){
             JOptionPane.showMessageDialog(null,  oldFolder + "Folder作成失敗");
@@ -117,7 +114,7 @@ public class MainForm extends JFrame {
             return;
         }
         String newFolder = txt_new.getText();
-        newFolder = newFolder.substring(newFolder.lastIndexOf("\\"),newFolder.length()-1) ;
+        newFolder = newFolder.substring(newFolder.lastIndexOf("\\"),newFolder.length()) ;
         File fileNewEvidence = new File(txt_new.getText()+"\\RESULT\\" + newFolder);
         if((!fileNewEvidence.exists()) && (!fileNewEvidence.mkdirs())){
             JOptionPane.showMessageDialog(null,  newFolder + "Folder作成失敗");
@@ -139,11 +136,16 @@ public class MainForm extends JFrame {
 
         //比較ファイルを取得
         ArrayList<CompareFileModel> compareFileArr = FileUtils.getCompareFileArr(fMap, tMap);
+        if( compareFileArr.size() == 0 ){
+            JOptionPane.showMessageDialog(null,  "比較ファイルない");
+            LogUtils.error("比較ファイルない");
+            return;
+        }
         TblJobInfoService tblJobInfoService = new TblJobInfoService();
         //insert data
         Const.jobID = tblJobInfoService.insertJobInfoByJobID(txt_mail.getText(), compareFileArr.size());
 
-        TimerService.waitTimer(compareFileArr,txt_new);
+        TimerService.waitTimer(compareFileArr,txt_new,txt_old);
     }
 
     private void btnStopActionPerformed(ActionEvent e) {

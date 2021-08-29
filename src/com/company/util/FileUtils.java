@@ -98,7 +98,10 @@ public class FileUtils {
                 if (file.getName().matches(matchKey)){
                     String[] split = value.toString().split("],");
                     List<ImageModel> imageModels = new ArrayList<>();
-                    for (int i = 0;i <= split.length;i++){
+                    for (int i = 0;i < split.length;i++){
+                        if(split[i].endsWith("]")){
+                            split[i] = split[i].substring(0,split[i].length()-1);
+                        }
                         String[] split1 = split[i].replace("[", "").split(",");
                         if (split1.length == 4){
                             ImageModel imageModel = new ImageModel();
@@ -106,6 +109,7 @@ public class FileUtils {
                             try {
                                 image = ImageIO.read(file);
                             } catch (IOException e) {
+                                LogUtils.error(file.getName() + "ファイル不正");
                                 e.printStackTrace();
                             }
                             imageModel.setLtx(Double.parseDouble(split1[0])/image.getWidth());
@@ -120,6 +124,7 @@ public class FileUtils {
             }
         }catch (Exception e){
             LogUtils.error(e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }

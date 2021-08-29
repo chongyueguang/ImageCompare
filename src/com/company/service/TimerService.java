@@ -2,10 +2,7 @@ package com.company.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.company.Const;
-import com.company.model.CompareFileModel;
-import com.company.model.ImageReqInfoModel;
-import com.company.model.ResultInfoModel;
-import com.company.model.SettingsModel;
+import com.company.model.*;
 import com.company.service.TblJobInfoService;
 import com.company.util.ExcelUtil;
 import com.company.util.ImageChangeUtils;
@@ -19,7 +16,11 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.*;
 
@@ -51,26 +52,26 @@ public class TimerService {
         }).start();
     }
 
-    public static void waitTimer(ArrayList<CompareFileModel> compareFileArr,JTextField txt_new){
+    public static void waitTimer(ArrayList<CompareFileModel> compareFileArr,JTextField txt_new,JTextField txt_old){
         Timer timer = new Timer(5000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 LogUtils.info("等待线程启动");
                 TblJobInfoService tblJobInfoService = new TblJobInfoService();
-                int status = tblJobInfoService.getJobInfoByJobID(Const.jobID - 1);
-                if (firstFlg && ((status == 3) || (status == 4))) {
+                boolean status = tblJobInfoService.getJobInfoStatus(Const.jobID);
+                if (firstFlg && status) {
                     tblJobInfoService.updateJobInfoStartTimeByJobID(Const.jobID);
                     HSSFWorkbook wb = ExcelUtil.getHSSFWorkbook("sheet1",null);
                     int concurrent = 3;//线程条数控制
                     //int fileSize = 1;//每次获取数据的数量
                     ExecutorService executor = Executors.newCachedThreadPool();
                     final Semaphore semaphore = new Semaphore(concurrent);
-                    for (int i = 0 ; i <= compareFileArr.size();i++) { //遍历所有图片文件
+                    List<Future<RunThreadResModel>> futures = new CopyOnWriteArrayList<>();
+                    for (CompareFileModel compareFileModel:compareFileArr) { //遍历所有图片文件
                         if (Const.stopFlg){
                             LogUtils.info("--------------系统停止-----------------");
-                            return;
+                            break;
                         }
-                        CompareFileModel compareFileModel = compareFileArr.get(i);
                         //对图片文件进行转码
                         String imageBase64From = null;
                         String imageBase64To = null;
@@ -101,36 +102,49 @@ public class TimerService {
                         json.put("image2", imageReqInfoModelTo);
                         json.put("settings", settingsModel);
 
-                        ResultInfoModel resultInfoModel = new ResultInfoModel();
-                        Future<ResultInfoModel> future = executor.submit(new PostThreadService(semaphore, json, resultInfoModel), resultInfoModel);
-                        try {
-                            ResultInfoModel resultInfoModel1 = future.get();
-
-                            try {
-                                compareFileModel.getFromFile().renameTo(new File( txt_new.getText() +"\\RESULT\\実行完了現エビデンス\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName()));
-                                compareFileModel.getToFile().renameTo(new File( txt_new.getText() +"\\RESULT\\実行完了新エビデンス\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName()));
-                                wb = ExcelUtil.setHSSFWorkbookValue("sheet1", wb, i, resultInfoModel1, compareFileModel, txt_new);
-                                Const.kannseiNum = i;
-                            }catch (Exception ex){
-                                LogUtils.error(ex.getMessage());
-                            }
-
-                        } catch (InterruptedException interruptedException) {
-                            interruptedException.printStackTrace();
-                        } catch (ExecutionException executionException) {
-                            executionException.printStackTrace();
-                        }
+                        RunThreadResModel runThreadResModel = new RunThreadResModel();
+                        runThreadResModel.setCompareFileModel(compareFileModel);
+                        Future<RunThreadResModel> future = executor.submit(new PostThreadService(semaphore, json, runThreadResModel), runThreadResModel);
+                        futures.add(future);
+                        String oldFolder = txt_old.getText();
+                        oldFolder = oldFolder.substring(oldFolder.lastIndexOf("\\"),oldFolder.length()) ;
+                        String newFolder = txt_new.getText();
+                        newFolder = newFolder.substring(newFolder.lastIndexOf("\\"),newFolder.length()) ;
+                        compareFileModel.getFromFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+oldFolder+"\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName()));
+                        compareFileModel.getToFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+newFolder+"\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName()));
 
                     }
                     //响应到客户端
                     try {
-                        FileOutputStream os = new FileOutputStream(txt_new.getText() +"\\RESULT\\比較結果レポート.xls");
+                        for (Future<RunThreadResModel> future : futures) {
+                            int i = 0;
+                            try {
+                                RunThreadResModel runThreadResModel = future.get();
+                                ResultInfoModel resultInfoModel1 = runThreadResModel.getResultInfoModel();
+                                CompareFileModel compareFileModel = runThreadResModel.getCompareFileModel();
+                                try {
+                                    wb = ExcelUtil.setHSSFWorkbookValue("sheet1", wb, i, resultInfoModel1, compareFileModel, txt_new);
+                                    i++;
+                                    Const.kannseiNum = i;
+                                }catch (Exception ex){
+                                    LogUtils.error(ex.getMessage());
+                                }
+
+                            } catch (InterruptedException interruptedException) {
+                                interruptedException.printStackTrace();
+                            } catch (ExecutionException executionException) {
+                                executionException.printStackTrace();
+                            }
+                        }
+                        Date date1 = new Date();	//创建一个date对象
+                        DateFormat format=new SimpleDateFormat("yyyyMMddHHmmss"); //定义格式
+                        FileOutputStream os = new FileOutputStream(txt_new.getText() +"\\RESULT\\比較結果レポート"+format.format(date1)+".xls");
                         wb.write(os);
                         os.flush();
                         os.close();
                     } catch (Exception ex) {
-                        //ex.printStackTrace();
                         LogUtils.error(ex.getMessage());
+                        ex.printStackTrace();
                     }
 
                     // 退出线程池
