@@ -3,9 +3,7 @@ package com.company.util;
 import com.company.model.CompareFileModel;
 import com.company.model.ImageAttributeModel;
 import com.company.model.ImageModel;
-
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -30,7 +28,11 @@ public class FileUtils {
             if (f.isFile()&&f.getName().toLowerCase().endsWith(".png")){
                 ImageAttributeModel imageAttributeModel = new ImageAttributeModel();
                 imageAttributeModel.setFile(f);
-                imageAttributeModel.setImageModel(FileUtils.readProToModel(pro,f));
+                if(pro != null){
+                    imageAttributeModel.setImageModel(FileUtils.readProToModel(pro,f));
+                }else {
+                    imageAttributeModel.setImageModel(new ArrayList<ImageModel>());
+                }
                 fileHashMap.put(f.getAbsolutePath().replace(path,""),imageAttributeModel);
             }
         }

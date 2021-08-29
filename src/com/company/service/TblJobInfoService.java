@@ -17,7 +17,6 @@ public class TblJobInfoService {
 
     public Vector<Vector<Object>> getJobInfoByListToVector(){
         Vector<Vector<Object>> jTableInfoBeans = new Vector<>();
-
         tblJobInfoDao = new TblJobInfoDao();
         List<TblJobInfoEntity> jobInfoByTbl = tblJobInfoDao.getJobInfoByTbl();
         for (TblJobInfoEntity tblJobInfoEntity :jobInfoByTbl) {
@@ -66,17 +65,10 @@ public class TblJobInfoService {
     }
 
     public void updateJobInfoStatusByTime(){
+        int runTime = 65;
         tblJobInfoDao = new TblJobInfoDao();
-        List<TblJobInfoEntity> jobInfoByTbl = tblJobInfoDao.getJobInfoByTbl();
-        for (TblJobInfoEntity tblJobInfoEntity:jobInfoByTbl) {
-            long nowTime = System.currentTimeMillis();
-            long updTime = tblJobInfoEntity.getUpdate_time().getTime();
-            long runTime = nowTime - updTime;
-            if (runTime/1000 > jobTblTimeOut && (tblJobInfoEntity.getStatus()==1)){
-                boolean updFlg = tblJobInfoDao.updateJobTblToStart(tblJobInfoEntity.getJob_id());
-                LogUtils.info("Job_id："+tblJobInfoEntity.getJob_id()+"运行时间过长，状态更新结果：" + updFlg);
-            }
-        }
+        boolean updFlg = tblJobInfoDao.updateJobTblToInit(runTime);
+        LogUtils.info("运行时间过长，状态更新结果：" + updFlg);
     }
 
     public int insertJobInfoByJobID(String mailAddress,int totalCount){
@@ -89,5 +81,25 @@ public class TblJobInfoService {
         tblJobInfoDao = new TblJobInfoDao();
         int status = tblJobInfoDao.getStatusByJobID(job_id);
         return status;
+    }
+
+    public void updateJobInfoKannSeiByJobID(int job_id,int kannSeiNum){
+        tblJobInfoDao = new TblJobInfoDao();
+        tblJobInfoDao.updataJobTblForTime(kannSeiNum,job_id);
+    }
+
+    public void updateJobInfoStartTimeByJobID(int job_id){
+        tblJobInfoDao = new TblJobInfoDao();
+        tblJobInfoDao.updateJobTblToStart(job_id);
+    }
+
+    public void updateJobInfoEndTimeByJobID(int job_id,int kannSeiNum){
+        tblJobInfoDao = new TblJobInfoDao();
+        tblJobInfoDao.updateJobTblToEnd(job_id,kannSeiNum);
+    }
+
+    public void updateJobInfoEndTimeByJobIDForStop(int job_id,int kannSeiNum){
+        tblJobInfoDao = new TblJobInfoDao();
+        tblJobInfoDao.updateJobTblForStop(job_id,kannSeiNum);
     }
 }

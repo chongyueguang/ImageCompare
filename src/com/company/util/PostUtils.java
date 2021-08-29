@@ -28,8 +28,8 @@ public class PostUtils {
 
             HttpPost httpPost = new HttpPost(url);
             RequestConfig requestConfig = RequestConfig.custom()
-                    .setSocketTimeout(30000) //服务器响应超时时间
-                    .setConnectTimeout(30000) //连接服务器超时时间
+                    .setSocketTimeout(3000) //服务器响应超时时间
+                    .setConnectTimeout(3000) //连接服务器超时时间
                     .build();
 
             httpPost.setConfig(requestConfig);

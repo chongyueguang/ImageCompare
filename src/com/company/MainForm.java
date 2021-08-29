@@ -9,18 +9,12 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
+import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.table.*;
-
-import com.alibaba.fastjson.JSONObject;
 import com.company.model.*;
-import com.company.service.PostThreadService;
 import com.company.service.TblJobInfoService;
 import com.company.util.FileUtils;
-import com.company.util.ImageChangeUtils;
 import com.company.util.LogUtils;
 import com.company.service.TimerService;
 
@@ -29,68 +23,137 @@ import com.company.service.TimerService;
  */
 public class MainForm extends JFrame {
 
+    //private int jobID = 0;
+
     public MainForm() {
         initComponents();
     }
 
+    /**
+     *現参照ボタン
+     * @param e
+     */
     private void btnOldActionPerformed(ActionEvent e) {
         jfilechooser1.setFileSelectionMode(1);
-        int a = jfilechooser1.showSaveDialog(null);  //保存文件，指定路径
+        //ファイルを保存する
+        int a = jfilechooser1.showSaveDialog(null);
         if(a == jfilechooser1.APPROVE_OPTION){
             File f = jfilechooser1.getSelectedFile();
             txt_old.setText(f.getAbsolutePath());
             fMap = new HashMap<>();
+            //propertiesファイルによって、ignoreAreasを取得
             Properties properties = FileUtils.getProperties(f);
+            //全体pngファイルを取得
             fMap = FileUtils.getAllPngFiles(fMap,f,f.getAbsolutePath(),properties);
 
         }
     }
 
+    /**
+     *新参照ボタン
+     * @param e
+     */
     private void btnNewActionPerformed(ActionEvent e) {
         jfilechooser2.setFileSelectionMode(1);
-        int a = jfilechooser2.showSaveDialog(null);  //保存文件，指定路径
+        //ファイルを保存する
+        int a = jfilechooser2.showSaveDialog(null);
         if(a == jfilechooser2.APPROVE_OPTION){
             File f = jfilechooser2.getSelectedFile();
             txt_new.setText(f.getAbsolutePath());
             tMap = new HashMap<>();
+            //propertiesファイルによって、ignoreAreasを取得
             Properties properties = FileUtils.getProperties(f);
+            //全体pngファイルを取得
             tMap = FileUtils.getAllPngFiles(tMap,f,f.getAbsolutePath(),properties);
         }
     }
 
+    /**
+     * 実行ボタン
+     * @param e
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private void btnRunActionPerformed(ActionEvent e) throws IOException, InterruptedException {
+        //メールチェック
+        if("".equals(txt_mail.getText()) || txt_mail.getText() == null){
+            JOptionPane.showMessageDialog(null, "メールを入力してください。");
+            LogUtils.error("メールを入力してください。");
+            return;
+        }
+        String check = "^([a-z0-9A-Z]+[-|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+        Pattern regex = Pattern.compile(check);
+        if(!regex.matcher(txt_mail.getText()).matches()){
+            JOptionPane.showMessageDialog(null, "メールフォーマット不正。");
+            LogUtils.error("メールフォーマット不正。");
+            return;
+        }
+        //ファイル格納場所(現)チェック
+        if("".equals(txt_old.getText()) || txt_old.getText() == null){
+            JOptionPane.showMessageDialog(null, "ファイル格納場所(現)を入力してください。");
+            LogUtils.error("ファイル格納場所(現)を入力してください。");
+            return;
+        }
+        //ファイル格納場所(新)チェック
+        if("".equals(txt_new.getText()) || txt_new.getText() == null){
+            JOptionPane.showMessageDialog(null, "ファイル格納場所(新)を入力してください。");
+            LogUtils.error("ファイル格納場所(新)を入力してください。");
+            return;
+        }
+
         //创建RESULT文件夹
         File fileCompare = new File(txt_new.getText()+"\\RESULT\\比較結果");
-        if(!fileCompare.mkdirs()){
+        if((!fileCompare.exists()) && (!fileCompare.mkdirs())){
+            JOptionPane.showMessageDialog(null, "比較結果Folder作成失敗");
             LogUtils.error("比較結果Folder作成失敗");
             return;
         }
-        File fileOldEvidence = new File(txt_new.getText()+"\\RESULT\\実行完了現エビデンス");
-        if(!fileOldEvidence.mkdirs()){
-            LogUtils.error("実行完了現エビデンスFolder作成失敗");
+        String oldFolder = txt_old.getText();
+        oldFolder = oldFolder.substring(oldFolder.lastIndexOf("\\"),oldFolder.length()-1) ;
+        File fileOldEvidence = new File(txt_new.getText()+"\\RESULT\\"+oldFolder);
+        if((!fileOldEvidence.exists()) && (!fileOldEvidence.mkdirs())){
+            JOptionPane.showMessageDialog(null,  oldFolder + "Folder作成失敗");
+            LogUtils.error( oldFolder + "Folder作成失敗");
             return;
         }
-        File fileNewEvidence = new File(txt_new.getText()+"\\RESULT\\実行完了新エビデンス");
-        if(!fileNewEvidence.mkdirs()){
-            LogUtils.error("実行完了新エビデンスFolder作成失敗");
+        String newFolder = txt_new.getText();
+        newFolder = newFolder.substring(newFolder.lastIndexOf("\\"),newFolder.length()-1) ;
+        File fileNewEvidence = new File(txt_new.getText()+"\\RESULT\\" + newFolder);
+        if((!fileNewEvidence.exists()) && (!fileNewEvidence.mkdirs())){
+            JOptionPane.showMessageDialog(null,  newFolder + "Folder作成失敗");
+            LogUtils.error( newFolder + "Folder作成失敗");
+            return;
+        }
+        File fileTempOldEvidence = new File(txt_new.getText()+"\\RESULT\\TEMPOLD");
+        if((!fileTempOldEvidence.exists()) && (!fileTempOldEvidence.mkdirs())){
+            JOptionPane.showMessageDialog(null,  " TEMPOLD Folder作成失敗");
+            LogUtils.error("TEMPOLD Folder作成失敗");
+            return;
+        }
+        File fileTempNewEvidence = new File(txt_new.getText()+"\\RESULT\\TEMPNEW");
+        if((!fileTempNewEvidence.exists()) && (!fileTempNewEvidence.mkdirs())){
+            JOptionPane.showMessageDialog(null,  " TEMPNEW Folder作成失敗");
+            LogUtils.error("TEMPNEW Folder作成失敗");
             return;
         }
 
-
-        //
+        //比較ファイルを取得
         ArrayList<CompareFileModel> compareFileArr = FileUtils.getCompareFileArr(fMap, tMap);
-        //
         TblJobInfoService tblJobInfoService = new TblJobInfoService();
-        //插入数据
-        int jobID = tblJobInfoService.insertJobInfoByJobID(txt_mail.getText(), compareFileArr.size());
+        //insert data
+        Const.jobID = tblJobInfoService.insertJobInfoByJobID(txt_mail.getText(), compareFileArr.size());
 
-        TimerService.waitTimer(compareFileArr,txt_new,jobID);
-
-
-
+        TimerService.waitTimer(compareFileArr,txt_new);
     }
 
     private void btnStopActionPerformed(ActionEvent e) {
+        //改变停止flg
+        Const.stopFlg = true;
+        //更改本条数据的状态
+        TblJobInfoService tblJobInfoService = new TblJobInfoService();
+        tblJobInfoService.updateJobInfoEndTimeByJobIDForStop(Const.jobID,Const.kannseiNum);
+        //结束主线程
+        System.exit(0);
     }
 
     private void initComponents() {
@@ -150,6 +213,7 @@ public class MainForm extends JFrame {
             table1.setSelectionForeground(Color.white);
             table1.setForeground(Color.black);
             table1.setBorder(UIManager.getBorder("EditorPane.border"));
+            table1.setRowHeight(15);
             scrollPane1.setViewportView(table1);
             //刷新画面定时器
             TimerService.refreshScreenTimer(scrollPane1,table1,column);

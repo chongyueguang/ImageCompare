@@ -23,7 +23,7 @@ public class TblJobInfoDao extends JdbcBaseDao {
         }
         ResultSet rs = null;
         try {
-            PreparedStatement pstate = con.prepareStatement("SELECT t.* FROM comparedb.tbl_job_info t order by JOB_ID desc;");
+            PreparedStatement pstate = con.prepareStatement("SELECT t.* FROM comparedb.tbl_job_info t where STATUS in (1,2)  order by JOB_ID desc;");
             rs = pstate.executeQuery();
             List<TblJobInfoEntity> list =new ArrayList<TblJobInfoEntity>();
             while (rs.next()) {
@@ -33,14 +33,26 @@ public class TblJobInfoDao extends JdbcBaseDao {
                 entity.setStatus(rs.getInt("STATUS"));
                 entity.setGamen_num(rs.getInt("GAMEN_NUM"));
                 entity.setKannsei_num(rs.getInt("KANNSEI_NUM"));
-                Timestamp regTime = rs.getTimestamp("REGIST_TIME");
-                entity.setRegist_time(regTime);
-                Timestamp staTime = rs.getTimestamp("START_TIME");
-                entity.setStart_time(staTime);
-                Timestamp endTime = rs.getTimestamp("END_TIME");
-                entity.setEnd_time(endTime);
-                Timestamp updTime = rs.getTimestamp("UPDATE_TIME");
-                entity.setUpdate_time(updTime);
+                if (rs.getTimestamp("REGIST_TIME") == null){
+                    entity.setRegist_time(null);
+                }else {
+                    entity.setRegist_time(rs.getTimestamp("REGIST_TIME"));
+                }
+                if (rs.getTimestamp("START_TIME") == null){
+                    entity.setStart_time(null);
+                }else {
+                    entity.setStart_time(rs.getTimestamp("START_TIME"));
+                }
+                if (rs.getTimestamp("END_TIME") == null){
+                    entity.setEnd_time(null);
+                }else {
+                    entity.setEnd_time(rs.getTimestamp("END_TIME"));
+                }
+                if (rs.getTimestamp("UPDATE_TIME") == null){
+                    entity.setUpdate_time(null);
+                }else {
+                    entity.setUpdate_time(rs.getTimestamp("UPDATE_TIME"));
+                }
                 list.add(entity);
             }
             return list;
@@ -75,8 +87,12 @@ public class TblJobInfoDao extends JdbcBaseDao {
             PreparedStatement pstate = con.prepareStatement("SELECT t.STATUS FROM comparedb.tbl_job_info t where job_id = ? ;");
             pstate.setInt(1,job_id);
             rs = pstate.executeQuery();
+            int status = 0;
+            while (rs.next()) {
+                status = rs.getInt("STATUS");
+            }
 
-            return rs.getInt("STATUS");
+            return status;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -98,12 +114,12 @@ public class TblJobInfoDao extends JdbcBaseDao {
      *
      * @return true:更新成功；false:更新エラー;
      */
-    public boolean updateJobTblToStart(int job_ID) {
+    public boolean updateJobTblToInit(int jobTblTimeOut) {
         Connection con = getConnection();
         if(con == null){
             return false;
         }
-        String sql = "UPDATE tbl_job_info SET `STATUS` = 4 WHERE STATUS = 1;";
+        String sql = "UPDATE tbl_job_info SET `STATUS` = 4 WHERE STATUS in (1,2) and `UPDATE_TIME` <= date_sub(now(), interval " + jobTblTimeOut + " second);";
         try {
             PreparedStatement pstate = con.prepareStatement(sql);
             pstate.execute();
@@ -221,4 +237,141 @@ public class TblJobInfoDao extends JdbcBaseDao {
         }
         return -1;
     }
+
+    /**
+     * 隊列中時、JOBテーブルを定期更新
+     *
+     * @return true:更新成功；false:更新エラー;
+     */
+    public boolean updataJobTblForTime(int kannSeiNum,int job_ID) {
+        Connection con = getConnection();
+        if(con == null){
+            return false;
+        }
+        try {
+            String sql = "UPDATE tbl_job_info SET `KANNSEI_NUM` = ?,`UPDATE_TIME` = now() WHERE `JOB_ID` = ?;";
+            PreparedStatement pstate = con.prepareStatement(sql);
+            pstate.setInt(1, kannSeiNum);
+            pstate.setInt(2, job_ID);
+            pstate.execute();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * コンペア開始の時、jobテーブルを更新
+     *
+     * @return true:更新成功；false:更新エラー;
+     */
+    public boolean updateJobTblToStart(int job_ID) {
+        Connection con = getConnection();
+        if(con == null){
+            return false;
+        }
+        try {
+            PreparedStatement pstate = con.prepareStatement("UPDATE tbl_job_info" +
+                    "   SET `STATUS` = 1," +
+                    "       `START_TIME` = now()," +
+                    "       `UPDATE_TIME` = now()" +
+                    "   WHERE `JOB_ID` = ?;" +
+                    "");
+            pstate.setInt(1, job_ID);
+            pstate.execute();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * コンペア完成の時、jobテーブルを更新
+     *
+     * @return true:更新成功；false:更新エラー;
+     */
+    public boolean updateJobTblToEnd(int job_ID, int kannseiNum) {
+        Connection con = getConnection();
+        if(con == null){
+            return false;
+        }
+        try {
+            PreparedStatement pstate = con.prepareStatement("UPDATE tbl_job_info" +
+                    "   SET `STATUS` = 3," +
+                    "       `KANNSEI_NUM` = ?," +
+                    "       `END_TIME` = now()," +
+                    "       `UPDATE_TIME` = now()" +
+                    "   WHERE `JOB_ID` = ?;" +
+                    "");
+            pstate.setInt(1, kannseiNum);
+            pstate.setInt(2, job_ID);
+            pstate.execute();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 停止するとき、jobテーブルを更新
+     *
+     * @param kannseiNum (エラーの時が-1)
+     * @return true:更新成功；false:更新エラー;
+     */
+    public boolean updateJobTblForStop(int job_ID, int kannseiNum) {
+        Connection con = getConnection();
+        if(con == null){
+            return false;
+        }
+        try {
+            String sql = "UPDATE tbl_job_info" +
+                    "   SET `STATUS` = 4,";
+            if (kannseiNum > 0) {
+                sql += " `KANNSEI_NUM` = ?,";
+            }
+            sql += "  `END_TIME` = now()," +
+                    "  `UPDATE_TIME` = now()" +
+                    "   WHERE `JOB_ID` = ?;";
+            PreparedStatement pstate = con.prepareStatement(sql);
+            if (kannseiNum > 0) {
+                pstate.setInt(1, kannseiNum);
+                pstate.setInt(2, job_ID);
+            } else {
+                pstate.setInt(1, job_ID);
+            }
+            pstate.execute();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

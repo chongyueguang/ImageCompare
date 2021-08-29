@@ -2,30 +2,29 @@ package com.company.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.company.Const;
 import com.company.model.ImageResponseModel;
 import com.company.model.ResultInfoModel;
 import com.company.net.FailListener;
 import com.company.net.SuccessListener;
 import com.company.util.LogUtils;
 import com.company.util.PostUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
 import java.io.File;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class PostThreadService implements Runnable {
-
     private Semaphore semaphore;
     private JSONObject jsonData;
-    private File fromFile;
-    private File toFile;
-    private String newFolderPath;
+    private ResultInfoModel resultInfoModel;
 
-    public PostThreadService(Semaphore semaphore, JSONObject jsonData, File fromFile, File toFile,String newFolderPath) {
+    public PostThreadService(Semaphore semaphore, JSONObject jsonData,ResultInfoModel resultInfoModel) {
         this.semaphore = semaphore;
         this.jsonData = jsonData;
-        this.fromFile = fromFile;
-        this.toFile = toFile;
-        this.newFolderPath = newFolderPath;
+        this.resultInfoModel = resultInfoModel;
     }
 
     @Override
@@ -38,25 +37,20 @@ public class PostThreadService implements Runnable {
                 public void success(String result) {
                     LogUtils.info("线程："  + Thread.currentThread().getName() + "返信成功");
                     JSONObject datas = JSONObject.parseObject(result);
-                    ResultInfoModel resultInfoModel  = datas.toJavaObject(ResultInfoModel.class);
-                    resultInfoModel.getData().getDiffImage1();
-                    resultInfoModel.getData().getDiffImage2();
-
-                    try {
-                        fromFile.renameTo(new File( newFolderPath +"\\RESULT\\実行完了現エビデンス\\"+ toFile.getPath() + "\\" + toFile.getName()));
-                        toFile.renameTo(new File( newFolderPath +"\\RESULT\\実行完了新エビデンス\\"+ toFile.getPath() + "\\" + toFile.getName()));
-                    }catch (Exception e){
-                        LogUtils.error(e.getMessage());
-                    }
+                    resultInfoModel  = datas.toJavaObject(ResultInfoModel.class);
                 }
             }, new FailListener() {
                 @Override
                 public void fail() {
+                    Const.stopFlg = true;
                     LogUtils.error("线程："  + Thread.currentThread().getName() + "返信失败");
+                    //throw new Exception("线程返信失败");
                 }
             });
         } catch (InterruptedException e) {
+            Const.stopFlg = true;
             LogUtils.error("线程："  + Thread.currentThread().getName() + "执行时，问题发生：" + e.getMessage());
+            e.printStackTrace();
         }finally {
             semaphore.release();
         }
