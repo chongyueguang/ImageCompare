@@ -203,7 +203,13 @@ public class MainForm extends JFrame {
             column.add("\u958b\u59cb\u6642\u9593");
             column.add("\u66f4\u65b0\u6642\u9593");
 
-            table1 = new JTable(tblJobInfoService.getJobInfoByListToVector(),column);
+            try{
+                table1 = new JTable(tblJobInfoService.getJobInfoByListToVector(),column);
+            }catch (Exception e){
+                JOptionPane.showMessageDialog(null, "DB属性不正");
+                System.exit(0);
+            }
+
             table1.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
             {

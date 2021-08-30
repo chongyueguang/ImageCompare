@@ -1,5 +1,7 @@
 package com.company.dao;
 
+import com.company.util.LogUtils;
+
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,6 +37,7 @@ public class JdbcBaseDao {
             in.close();
         } catch (IOException e) {
             // 转换异常抛出
+            LogUtils.error(e.getMessage());
             throw new ExceptionInInitializerError("dbcfgファイル内容の取得を失敗した");
         }
         try {
@@ -42,6 +45,7 @@ public class JdbcBaseDao {
             Class.forName(driverClass);
         } catch (ClassNotFoundException e) {
             // 转换异常抛出
+            LogUtils.error(e.getMessage());
             throw new ExceptionInInitializerError("加载驱动失败");
         }
     }

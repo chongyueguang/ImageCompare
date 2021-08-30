@@ -30,8 +30,7 @@ public class TimerService {
 
     private static boolean firstFlg = true;
 
-    public TimerService() {
-        super();
+    static {
         try {
             InputStream in = com.company.MainForm.class.getClassLoader().getResourceAsStream("config.properties");
 //            String confPath = System.getProperty("user.dir") + "\\config.properties";
