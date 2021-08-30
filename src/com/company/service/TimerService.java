@@ -111,8 +111,8 @@ public class TimerService {
                         oldFolder = oldFolder.substring(oldFolder.lastIndexOf("\\"),oldFolder.length()) ;
                         String newFolder = txt_new.getText();
                         newFolder = newFolder.substring(newFolder.lastIndexOf("\\"),newFolder.length()) ;
-                        compareFileModel.getFromFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+oldFolder+"\\"+ compareFileModel.getKey() + "\\" + compareFileModel.getFromFile().getName()));
-                        compareFileModel.getToFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+newFolder+"\\"+ compareFileModel.getKey() + "\\" + compareFileModel.getToFile().getName()));
+                        compareFileModel.getFromFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+oldFolder+"\\"+ compareFileModel.getKey()));
+                        compareFileModel.getToFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+newFolder+"\\"+ compareFileModel.getKey()));
 
                     }
                     //响应到客户端
