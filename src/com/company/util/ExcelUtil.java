@@ -238,13 +238,15 @@ public class ExcelUtil {
         cell5.setCellStyle(style3);
         //ステータス
         HSSFCell cell6 = row3.createCell(5);
-        cell6.setCellValue(resultInfoModel.getMessage());
+
         cell6.setCellStyle(style3);
         //比較結果
         HSSFCell cell7 = row3.createCell(6);
-        if(!"正常".equals(resultInfoModel.getMessage())){
+        if(!"success".equals(resultInfoModel.getMessage())){
+            cell6.setCellValue("正常");
             cell7.setCellValue("-");
         }else {
+            cell6.setCellValue("異常");
             cell7.setCellValue(resultInfoModel.getData().getDiffResult());
         }
         cell7.setCellStyle(style3);

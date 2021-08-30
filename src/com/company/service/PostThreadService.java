@@ -8,17 +8,34 @@ import com.company.net.FailListener;
 import com.company.net.SuccessListener;
 import com.company.util.LogUtils;
 import com.company.util.PostUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
 public class PostThreadService implements Runnable {
+    private String postUrl;
     private Semaphore semaphore;
     private JSONObject jsonData;
     private RunThreadResModel runThreadResModel;
 
+
     public PostThreadService(Semaphore semaphore, JSONObject jsonData, RunThreadResModel runThreadResModel) {
+        super();
         this.semaphore = semaphore;
         this.jsonData = jsonData;
         this.runThreadResModel = runThreadResModel;
+        try {
+            InputStream in = com.company.MainForm.class.getClassLoader().getResourceAsStream("config.properties");
+//            String confPath = System.getProperty("user.dir") + "\\config.properties";
+//            InputStream in = new BufferedInputStream(new FileInputStream(confPath));
+            Properties props = new Properties();
+            props.load(in);
+            postUrl = props.getProperty("postUrl");
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -27,8 +44,7 @@ public class PostThreadService implements Runnable {
             try {
                 semaphore.acquire();
                 LogUtils.info("线程：" + Thread.currentThread().getName() +"进行中，可用残余线程数：" + semaphore.availablePermits());
-                //Thread.sleep(10000);
-                PostUtils.postWithParams("http://192.168.8.11/api/diff", jsonData, new SuccessListener() {
+                PostUtils.postWithParams(postUrl + "/api/diff", jsonData, new SuccessListener() {
                     @Override
                     public void success(String result) {
                         LogUtils.info("线程："  + Thread.currentThread().getName() + "返信成功");
