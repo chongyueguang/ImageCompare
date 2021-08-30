@@ -46,7 +46,6 @@ public class ExcelUtil {
         row1.setHeightInPoints(20);
         HSSFRow row2 = sheet.createRow(1);
         row2.setHeightInPoints((float) 33.75);
-        HSSFRow row3 = sheet.createRow(2);
 
         // 第四步，创建单元格，并设置值表头 设置表头居中
         HSSFCellStyle style1 = wb.createCellStyle();
@@ -171,7 +170,7 @@ public class ExcelUtil {
         return wb;
     }
 
-    public static HSSFWorkbook setHSSFWorkbookValue(String sheetName, HSSFWorkbook wb, int rowNum, ResultInfoModel resultInfoModel, CompareFileModel compareFileModel, JTextField txt_new){
+    public static HSSFWorkbook setHSSFWorkbookValue(String sheetName, HSSFWorkbook wb, int rowNum, ResultInfoModel resultInfoModel, CompareFileModel compareFileModel, JTextField txt_new, JTextField txt_old){
         HSSFSheet sheet = wb.getSheet(sheetName);
         HSSFRow row3 = sheet.createRow(rowNum + 2);
         //创建单元格，并设置值表头 设置表头居中
@@ -204,29 +203,33 @@ public class ExcelUtil {
         cell1.setCellValue(df.format(new Date()));
         cell1.setCellStyle(style3);
         //期待値ファイル
+        String oldFolder = txt_old.getText();
+        oldFolder = oldFolder.substring(oldFolder.lastIndexOf("\\"),oldFolder.length()) ;
         HSSFCell cell2 = row3.createCell(1);
         cell2.setCellValue("OLD" + compareFileModel.getFromFile().getName());
         HSSFHyperlink  link1 = new HSSFHyperlink(HSSFHyperlink.LINK_URL);
-        link1.setAddress(txt_new.getText() +"\\RESULT\\実行完了現エビデンス\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName());
+        link1.setAddress(txt_new.getText() +"\\RESULT\\"+oldFolder+"\\"+ compareFileModel.getKey() + "\\" + compareFileModel.getFromFile().getName());
         cell2.setHyperlink(link1);
         cell2.setCellStyle(style3);
         //検証ファイル
+        String newFolder = txt_new.getText();
+        newFolder = newFolder.substring(newFolder.lastIndexOf("\\"),newFolder.length()) ;
         HSSFCell cell3 = row3.createCell(2);
         cell3.setCellValue("NEW" + compareFileModel.getToFile().getName());
         HSSFHyperlink  link2 = new HSSFHyperlink(HSSFHyperlink.LINK_URL);
-        link2.setAddress(txt_new.getText() +"\\RESULT\\実行完了新エビデンス\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName());
+        link2.setAddress(txt_new.getText() +"\\RESULT\\"+newFolder+"\\"+ compareFileModel.getKey()  + "\\" + compareFileModel.getToFile().getName());
         cell3.setHyperlink(link2);
         cell3.setCellStyle(style3);
         //比較結果ファイル
-        ImageChangeUtils.base64StrToImage(resultInfoModel.getData().getDiffImage1(),txt_new.getText() +"\\RESULT\\TEMPOLD\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName());
-        ImageChangeUtils.base64StrToImage(resultInfoModel.getData().getDiffImage2(),txt_new.getText() +"\\RESULT\\TEMPNEW\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName());
-        ImageChangeUtils.joinImage(new File(txt_new.getText() +"\\RESULT\\TEMPOLD\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName()),
-                new File(txt_new.getText() +"\\RESULT\\TEMPNEW\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName()),
-                txt_new.getText() +"\\RESULT\\比較結果\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName());
+        ImageChangeUtils.base64StrToImage(resultInfoModel.getData().getDiffImage1(),txt_new.getText() +"\\RESULT\\TEMPOLD\\"+ compareFileModel.getKey()+"\\"+ compareFileModel.getFromFile().getName());
+        ImageChangeUtils.base64StrToImage(resultInfoModel.getData().getDiffImage2(),txt_new.getText() +"\\RESULT\\TEMPNEW\\"+ compareFileModel.getKey()+"\\"+ compareFileModel.getToFile().getName());
+        ImageChangeUtils.joinImage(new File(txt_new.getText() +"\\RESULT\\TEMPOLD\\"+ compareFileModel.getKey()+"\\"+ compareFileModel.getFromFile().getName()),
+                new File(txt_new.getText() +"\\RESULT\\TEMPNEW\\"+ compareFileModel.getKey()+"\\"+ compareFileModel.getToFile().getName()),
+                txt_new.getText() +"\\RESULT\\比較結果\\"+ compareFileModel.getKey()+"\\"+ compareFileModel.getFromFile().getName());
         HSSFCell cell4 = row3.createCell(3);
         cell4.setCellValue("Diff" + compareFileModel.getToFile().getName());
         HSSFHyperlink  link3 = new HSSFHyperlink(HSSFHyperlink.LINK_URL);
-        link3.setAddress(txt_new.getText() +"\\RESULT\\比較結果\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName());
+        link3.setAddress(txt_new.getText() +"\\RESULT\\比較結果\\"+ compareFileModel.getKey()+"\\"+ compareFileModel.getFromFile().getName());
         cell4.setHyperlink(link3);
         cell4.setCellStyle(style3);
         //精度

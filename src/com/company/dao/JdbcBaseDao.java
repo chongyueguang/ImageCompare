@@ -1,5 +1,7 @@
 package com.company.dao;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
@@ -21,7 +23,10 @@ public class JdbcBaseDao {
             //  JdbcUtil.class是获得当前对象所属的class对象
             //  getClassLoader()是取得该Class对象的类装载器
             //  getResourceAsStream(“dbcfg.properties”) 调用类加载器的方法加载资源，返回是字节输入流
-            InputStream in = com.company.MainForm.class.getClassLoader().getResourceAsStream("dbcfg.properties");
+            //InputStream in = com.company.MainForm.class.getClassLoader().getResourceAsStream("dbcfg.properties");
+            String confPath = System.getProperty("user.dir") + "\\dbcfg.properties";
+            InputStream in = new BufferedInputStream(new FileInputStream(confPath));
+
             // 实例化Properties对象，目的是为了创建props
             Properties props = new Properties();
             // 在props对象中可以进行加载属性列表到Properties类对象
@@ -41,7 +46,7 @@ public class JdbcBaseDao {
             in.close();
         } catch (IOException e) {
             // 转换异常抛出
-            throw new ExceptionInInitializerError("获取数据库配置文件信息失败");
+            throw new ExceptionInInitializerError("dbcfgファイル内容の取得を失敗した");
         }
         try {
             // 类加载-->驱动

@@ -23,7 +23,7 @@ public class TblJobInfoDao extends JdbcBaseDao {
         }
         ResultSet rs = null;
         try {
-            PreparedStatement pstate = con.prepareStatement("SELECT t.* FROM comparedb.tbl_job_info t where STATUS in (1,2)  order by JOB_ID desc;");
+            PreparedStatement pstate = con.prepareStatement("SELECT t.* FROM tbl_job_info t where STATUS in (1,2)  order by JOB_ID desc;");
             rs = pstate.executeQuery();
             List<TblJobInfoEntity> list =new ArrayList<TblJobInfoEntity>();
             while (rs.next()) {
@@ -84,7 +84,7 @@ public class TblJobInfoDao extends JdbcBaseDao {
         }
         ResultSet rs = null;
         try {
-            PreparedStatement pstate = con.prepareStatement("SELECT t.STATUS FROM comparedb.tbl_job_info t where job_id = ? ;");
+            PreparedStatement pstate = con.prepareStatement("SELECT t.STATUS FROM tbl_job_info t where job_id = ? ;");
             pstate.setInt(1,job_id);
             rs = pstate.executeQuery();
             int status = 0;

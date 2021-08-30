@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -79,8 +80,8 @@ public class TimerService {
                             imageBase64From = ImageChangeUtils.imageToBase64ByFile(compareFileModel.getFromFile());
                             imageBase64To = ImageChangeUtils.imageToBase64ByFile(compareFileModel.getToFile());
                         } catch (IOException ioException) {
-                            //ioException.printStackTrace();
                             LogUtils.error(ioException.getMessage());
+                            ioException.printStackTrace();
                         }
 
                         ImageReqInfoModel imageReqInfoModelFrom = new ImageReqInfoModel();
@@ -110,8 +111,8 @@ public class TimerService {
                         oldFolder = oldFolder.substring(oldFolder.lastIndexOf("\\"),oldFolder.length()) ;
                         String newFolder = txt_new.getText();
                         newFolder = newFolder.substring(newFolder.lastIndexOf("\\"),newFolder.length()) ;
-                        compareFileModel.getFromFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+oldFolder+"\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName()));
-                        compareFileModel.getToFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+newFolder+"\\"+ compareFileModel.getToFile().getPath() + "\\" + compareFileModel.getToFile().getName()));
+                        compareFileModel.getFromFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+oldFolder+"\\"+ compareFileModel.getKey() + "\\" + compareFileModel.getFromFile().getName()));
+                        compareFileModel.getToFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+newFolder+"\\"+ compareFileModel.getKey() + "\\" + compareFileModel.getToFile().getName()));
 
                     }
                     //响应到客户端
@@ -123,7 +124,7 @@ public class TimerService {
                                 ResultInfoModel resultInfoModel1 = runThreadResModel.getResultInfoModel();
                                 CompareFileModel compareFileModel = runThreadResModel.getCompareFileModel();
                                 try {
-                                    wb = ExcelUtil.setHSSFWorkbookValue("sheet1", wb, i, resultInfoModel1, compareFileModel, txt_new);
+                                    wb = ExcelUtil.setHSSFWorkbookValue("sheet1", wb, i, resultInfoModel1, compareFileModel, txt_new,txt_old);
                                     i++;
                                     Const.kannseiNum = i;
                                 }catch (Exception ex){
@@ -139,6 +140,7 @@ public class TimerService {
                         Date date1 = new Date();	//创建一个date对象
                         DateFormat format=new SimpleDateFormat("yyyyMMddHHmmss"); //定义格式
                         FileOutputStream os = new FileOutputStream(txt_new.getText() +"\\RESULT\\比較結果レポート"+format.format(date1)+".xls");
+                        //OutputStreamWriter osr = new OutputStreamWriter(new FileOutputStream(txt_new.getText() + "\\RESULT\\比較結果レポート" + format.format(date1) + ".xls"), "utf-8");
                         wb.write(os);
                         os.flush();
                         os.close();
@@ -155,58 +157,6 @@ public class TimerService {
             }
         });
         timer.start();
-
-//        java.util.Timer timerUtil = new java.util.Timer();
-//        timerUtil.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                TblJobInfoService tblJobInfoService = new TblJobInfoService();
-//                int status = tblJobInfoService.getJobInfoByJobID(jobID - 1);
-//                if((status==3)||(status==4)){
-//                    int concurrent = 3;//线程条数控制
-//                    //int fileSize = 1;//每次获取数据的数量
-//                    ExecutorService executor = Executors.newCachedThreadPool();
-//                    final Semaphore semaphore = new Semaphore(concurrent);
-//                    for (CompareFileModel compareFileModel : compareFileArr){ //遍历所有图片文件
-//                        //对图片文件进行转码
-//                        String imageBase64From = null;
-//                        String imageBase64To = null;
-//                        try {
-//                            imageBase64From = ImageChangeUtils.imageToBase64ByFile(compareFileModel.getFromFile());
-//                            imageBase64To = ImageChangeUtils.imageToBase64ByFile(compareFileModel.getToFile());
-//                        } catch (IOException ioException) {
-//                            //ioException.printStackTrace();
-//                            LogUtils.error(ioException.getMessage());
-//                        }
-//
-//                        ImageReqInfoModel imageReqInfoModelFrom = new ImageReqInfoModel();
-//                        imageReqInfoModelFrom.setData(imageBase64From);
-//                        imageReqInfoModelFrom.setIgnoreAreas(compareFileModel.getFromImageModel());
-//
-//                        ImageReqInfoModel imageReqInfoModelTo = new ImageReqInfoModel();
-//                        imageReqInfoModelTo.setData(imageBase64To);
-//                        imageReqInfoModelTo.setIgnoreAreas(compareFileModel.getToImageModel());
-//
-//                        SettingsModel settingsModel = new SettingsModel();
-//                        settingsModel.setConfThres(0);
-//                        settingsModel.setIouThres(0);
-//                        settingsModel.setLevdThres(0);
-//                        settingsModel.setShiftThres(0);
-//
-//                        JSONObject json = new JSONObject();
-//                        json.put("image1",imageReqInfoModelFrom);
-//                        json.put("image2",imageReqInfoModelTo);
-//                        json.put("settings",settingsModel);
-//
-//
-//                        executor.execute(new PostThreadService(semaphore, json,compareFileModel.getFromFile(),compareFileModel.getToFile(),txt_new.getText()));
-//                    }
-//                    // 退出线程池
-//                    executor.shutdown();
-//                }
-//                timerUtil.cancel();
-//            }
-//        }, 5000);
     }
 
 }
