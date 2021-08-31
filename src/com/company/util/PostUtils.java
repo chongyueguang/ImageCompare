@@ -15,11 +15,11 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 
 public class PostUtils {
-    public static void post(String url, SuccessListener sListener, FailListener fListener) {
+    public static void post(String url, SuccessListener sListener, FailListener fListener) throws Exception {
         postWithParams(url, new JSONObject(),sListener,fListener);
     }
 
-    public static void postWithParams(String url, JSONObject jsonObject, SuccessListener sListener, FailListener fListener) {
+    public static void postWithParams(String url, JSONObject jsonObject, SuccessListener sListener, FailListener fListener) throws Exception {
         CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultCookieStore(CookiesHolder.getCookieStore()).build();
         CloseableHttpResponse response = null;
         try {

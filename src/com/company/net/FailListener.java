@@ -2,5 +2,5 @@ package com.company.net;
 
 public interface FailListener {
 
-    void fail();
+    void fail() throws Exception;
 }

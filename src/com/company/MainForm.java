@@ -9,6 +9,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.table.*;
@@ -17,6 +18,7 @@ import com.company.service.TblJobInfoService;
 import com.company.util.FileUtils;
 import com.company.util.LogUtils;
 import com.company.service.TimerService;
+import com.company.work.WaitWork;
 
 /**
  * @author 1
@@ -72,6 +74,7 @@ public class MainForm extends JFrame {
      * @throws InterruptedException
      */
     private void btnRunActionPerformed(ActionEvent e) throws IOException, InterruptedException {
+
         //メールチェック
         if("".equals(txt_mail.getText()) || txt_mail.getText() == null){
             JOptionPane.showMessageDialog(null, "メールを入力してください。");
@@ -145,12 +148,20 @@ public class MainForm extends JFrame {
         //insert data
         Const.jobID = tblJobInfoService.insertJobInfoByJobID(txt_mail.getText(), compareFileArr.size());
 
-        TimerService.waitTimer(compareFileArr,txt_new,txt_old);
+        waitWork = new WaitWork(compareFileArr,txt_new,txt_old);
+
+        waitWork.execute();
     }
 
     private void btnStopActionPerformed(ActionEvent e) {
+        waitWork.cancel(true);
         //改变停止flg
-        Const.stopFlg = true;
+//        Const.stopFlg = true;
+        try {
+            TimeUnit.SECONDS.sleep(5);
+        } catch (InterruptedException interruptedException) {
+            interruptedException.printStackTrace();
+        }
         //更改本条数据的状态
         TblJobInfoService tblJobInfoService = new TblJobInfoService();
         tblJobInfoService.updateJobInfoEndTimeByJobIDForStop(Const.jobID,Const.kannseiNum);
@@ -357,4 +368,5 @@ public class MainForm extends JFrame {
     private JFileChooser jfilechooser2;
     private HashMap<String, ImageAttributeModel> fMap;
     private HashMap<String, ImageAttributeModel> tMap;
+    private WaitWork waitWork;
 }
