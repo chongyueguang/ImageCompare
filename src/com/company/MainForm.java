@@ -146,9 +146,15 @@ public class MainForm extends JFrame {
         oldFolderList =FileUtils.getAllPath(oldFolderList,txt_old.getText());
         for(int i = 0;i<oldFolderList.size();i++) {
             File childFolder = new File(txt_new.getText()+"\\RESULT\\"+oldFolder + "\\" + oldFolderList.get(i));
+            File childTempFolder = new File(txt_new.getText()+"\\RESULT\\TEMPOLD\\"+oldFolder + "\\" + oldFolderList.get(i));
             if((!childFolder.exists()) && (!childFolder.mkdirs())){
                 JOptionPane.showMessageDialog(null, "比較結果Folder作成失敗");
                 LogUtils.error("比較結果Folder作成失敗" + childFolder);
+                return;
+            }
+            if((!childTempFolder.exists()) && (!childTempFolder.mkdirs())){
+                JOptionPane.showMessageDialog(null, "比較結果TEMP Folder作成失敗");
+                LogUtils.error("比較結果Folder作成失敗" + childTempFolder);
                 return;
             }
         }
@@ -157,9 +163,15 @@ public class MainForm extends JFrame {
         newFolderList =FileUtils.getAllPath(newFolderList,txt_new.getText());
         for(int i = 0;i<newFolderList.size();i++) {
             File childFolder = new File(txt_new.getText()+"\\RESULT\\"+newFolder + "\\" + newFolderList.get(i));
+            File childTempFolder = new File(txt_new.getText()+"\\RESULT\\TEMPNEW\\"+newFolder + "\\" + newFolderList.get(i));
             if((!childFolder.exists()) && (!childFolder.mkdirs())){
                 JOptionPane.showMessageDialog(null, "比較結果Folder作成失敗");
                 LogUtils.error("比較結果Folder作成失敗" + childFolder);
+                return;
+            }
+            if((!childTempFolder.exists()) && (!childTempFolder.mkdirs())){
+                JOptionPane.showMessageDialog(null, "比較結果Folder作成失敗");
+                LogUtils.error("比較結果Folder作成失敗" + childTempFolder);
                 return;
             }
         }
@@ -170,6 +182,7 @@ public class MainForm extends JFrame {
         Properties properties1 = FileUtils.getProperties(f1);
         //全体pngファイルを取得
         fMap = FileUtils.getAllPngFiles(fMap,f1,f1.getAbsolutePath(),properties1);
+
         File f2 = jfilechooser2.getSelectedFile();
         tMap = new HashMap<>();
         //propertiesファイルによって、ignoreAreasを取得
