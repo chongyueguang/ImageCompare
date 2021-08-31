@@ -7,6 +7,7 @@ import com.company.model.ResultInfoModel;
 import com.company.model.RunThreadResModel;
 import com.company.net.FailListener;
 import com.company.net.SuccessListener;
+import com.company.util.ImageChangeUtils;
 import com.company.util.LogUtils;
 import com.company.util.PostUtils;
 
@@ -66,6 +67,12 @@ public class PostThreadService extends Thread implements Runnable {
                             newFolder = newFolder.substring(newFolder.lastIndexOf("\\"),newFolder.length()) ;
                             compareFileModel.getFromFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+oldFolder+"\\"+ compareFileModel.getKey()));
                             compareFileModel.getToFile().renameTo(new File( txt_new.getText() +"\\RESULT\\"+newFolder+"\\"+ compareFileModel.getKey()));
+                            ImageChangeUtils.base64StrToImage(runThreadResModel.getResultInfoModel().getData().getDiffImage1(),txt_new.getText() +"\\RESULT\\TEMPOLD\\"+ compareFileModel.getKey());
+                            ImageChangeUtils.base64StrToImage(runThreadResModel.getResultInfoModel().getData().getDiffImage2(),txt_new.getText() +"\\RESULT\\TEMPNEW\\"+ compareFileModel.getKey());
+                            ImageChangeUtils.joinImage(new File(txt_new.getText() +"\\RESULT\\TEMPOLD\\"+ compareFileModel.getKey()),
+                                    new File(txt_new.getText() +"\\RESULT\\TEMPNEW\\"+ compareFileModel.getKey()),
+                                    txt_new.getText() +"\\RESULT\\比較結果\\"+ compareFileModel.getKey());
+                            Const.runThreadResModels.add(runThreadResModel);
                         }
                     }, new FailListener() {
                         @Override

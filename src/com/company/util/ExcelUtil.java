@@ -221,11 +221,6 @@ public class ExcelUtil {
         cell3.setHyperlink(link2);
         cell3.setCellStyle(style3);
         //比較結果ファイル
-        ImageChangeUtils.base64StrToImage(resultInfoModel.getData().getDiffImage1(),txt_new.getText() +"\\RESULT\\TEMPOLD\\"+ compareFileModel.getKey());
-        ImageChangeUtils.base64StrToImage(resultInfoModel.getData().getDiffImage2(),txt_new.getText() +"\\RESULT\\TEMPNEW\\"+ compareFileModel.getKey());
-        ImageChangeUtils.joinImage(new File(txt_new.getText() +"\\RESULT\\TEMPOLD\\"+ compareFileModel.getKey()),
-                new File(txt_new.getText() +"\\RESULT\\TEMPNEW\\"+ compareFileModel.getKey()),
-                txt_new.getText() +"\\RESULT\\比較結果\\"+ compareFileModel.getKey());
         HSSFCell cell4 = row3.createCell(3);
         cell4.setCellValue("Diff" + compareFileModel.getToFile().getName());
         HSSFHyperlink  link3 = new HSSFHyperlink(HSSFHyperlink.LINK_URL);

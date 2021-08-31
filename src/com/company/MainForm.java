@@ -7,14 +7,21 @@ package com.company;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.table.*;
 import com.company.model.*;
 import com.company.service.TblJobInfoService;
+import com.company.util.ExcelUtil;
 import com.company.util.FileUtils;
 import com.company.util.LogUtils;
 import com.company.service.TimerService;
@@ -157,14 +164,47 @@ public class MainForm extends JFrame {
         waitWork.cancel(true);
         //改变停止flg
         Const.stopFlg = true;
+
+        for (RunThreadResModel runThreadResModel : Const.runThreadResModels) {
+            int i = 0;
+            try {
+                ResultInfoModel resultInfoModel1 = runThreadResModel.getResultInfoModel();
+                CompareFileModel compareFileModel = runThreadResModel.getCompareFileModel();
+                try {
+                    Const.wb = ExcelUtil.setHSSFWorkbookValue("sheet1", Const.wb, i, resultInfoModel1, compareFileModel, txt_new,txt_old);
+                    i++;
+                    Const.kannseiNum = i;
+                }catch (Exception ex){
+                    LogUtils.error(ex.getMessage());
+                }
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
+        Date date1 = new Date();	//创建一个date对象
+        DateFormat format=new SimpleDateFormat("yyyyMMddHHmmss"); //定义格式
+        FileOutputStream os = null;
+        try {
+            os = new FileOutputStream(txt_new.getText() +"\\RESULT\\比較結果レポート"+format.format(date1)+".xls");
+            //OutputStreamWriter osr = new OutputStreamWriter(new FileOutputStream(txt_new.getText() + "\\RESULT\\比較結果レポート" + format.format(date1) + ".xls"), "utf-8");
+            Const.wb.write(os);
+            os.flush();
+            os.close();
+            FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPOLD"));
+            FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPNEW"));
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+
+        //更改本条数据的状态
+        TblJobInfoService tblJobInfoService = new TblJobInfoService();
+        tblJobInfoService.updateJobInfoEndTimeByJobIDForStop(Const.jobID,Const.kannseiNum);
+
         try {
             TimeUnit.SECONDS.sleep(5);
         } catch (InterruptedException interruptedException) {
             interruptedException.printStackTrace();
         }
-        //更改本条数据的状态
-        TblJobInfoService tblJobInfoService = new TblJobInfoService();
-        tblJobInfoService.updateJobInfoEndTimeByJobIDForStop(Const.jobID,Const.kannseiNum);
         //结束主线程
         //System.exit(0);
     }

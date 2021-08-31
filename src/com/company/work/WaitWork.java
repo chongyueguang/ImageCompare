@@ -40,7 +40,7 @@ public class WaitWork extends SwingWorker {
         boolean status = tblJobInfoService.getJobInfoStatus(Const.jobID);
         while (firstFlg && status) {
             tblJobInfoService.updateJobInfoStartTimeByJobID(Const.jobID);
-            HSSFWorkbook wb = ExcelUtil.getHSSFWorkbook("sheet1",null);
+            Const.wb = ExcelUtil.getHSSFWorkbook("sheet1",null);
             int concurrent = 3;//线程条数控制
             ExecutorService executor = Executors.newCachedThreadPool();
             final Semaphore semaphore = new Semaphore(concurrent);
@@ -83,17 +83,17 @@ public class WaitWork extends SwingWorker {
 
                 RunThreadResModel runThreadResModel = new RunThreadResModel();
                 runThreadResModel.setCompareFileModel(compareFileModel);
-                Future<RunThreadResModel> future;
+                Future<RunThreadResModel> future = null;
                 try {
                     future = executor.submit(new PostThreadService(semaphore, json, runThreadResModel,txt_new,txt_old), runThreadResModel);
-                    futures.add(future);
+                    //futures.add(future);
                 }catch (Exception e){
-                    LogUtils.error("退出循环");
                     LogUtils.error(e.getMessage());
                     e.printStackTrace();
                     break;
+                }finally {
+                    futures.add(future);
                 }
-                futures.add(future);
             }
             //响应到客户端
             try {
@@ -105,7 +105,7 @@ public class WaitWork extends SwingWorker {
                             ResultInfoModel resultInfoModel1 = runThreadResModel.getResultInfoModel();
                             CompareFileModel compareFileModel = runThreadResModel.getCompareFileModel();
                             try {
-                                wb = ExcelUtil.setHSSFWorkbookValue("sheet1", wb, i, resultInfoModel1, compareFileModel, txt_new,txt_old);
+                                Const.wb = ExcelUtil.setHSSFWorkbookValue("sheet1", Const.wb, i, resultInfoModel1, compareFileModel, txt_new,txt_old);
                                 i++;
                                 Const.kannseiNum = i;
                             }catch (Exception ex){
@@ -119,15 +119,18 @@ public class WaitWork extends SwingWorker {
                         executionException.printStackTrace();
                     }
                 }
-                Date date1 = new Date();	//创建一个date对象
-                DateFormat format=new SimpleDateFormat("yyyyMMddHHmmss"); //定义格式
-                FileOutputStream os = new FileOutputStream(txt_new.getText() +"\\RESULT\\比較結果レポート"+format.format(date1)+".xls");
-                //OutputStreamWriter osr = new OutputStreamWriter(new FileOutputStream(txt_new.getText() + "\\RESULT\\比較結果レポート" + format.format(date1) + ".xls"), "utf-8");
-                wb.write(os);
-                os.flush();
-                os.close();
-                FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPOLD"));
-                FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPNEW"));
+                if(isCancelled()){
+                    Date date1 = new Date();	//创建一个date对象
+                    DateFormat format=new SimpleDateFormat("yyyyMMddHHmmss"); //定义格式
+                    FileOutputStream os = new FileOutputStream(txt_new.getText() +"\\RESULT\\比較結果レポート"+format.format(date1)+".xls");
+                    //OutputStreamWriter osr = new OutputStreamWriter(new FileOutputStream(txt_new.getText() + "\\RESULT\\比較結果レポート" + format.format(date1) + ".xls"), "utf-8");
+                    Const.wb.write(os);
+                    os.flush();
+                    os.close();
+                    FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPOLD"));
+                    FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPNEW"));
+                }
+
             } catch (Exception ex) {
                 LogUtils.error(ex.getMessage());
                 ex.printStackTrace();
