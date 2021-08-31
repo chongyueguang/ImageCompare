@@ -156,7 +156,7 @@ public class MainForm extends JFrame {
     private void btnStopActionPerformed(ActionEvent e) {
         waitWork.cancel(true);
         //改变停止flg
-//        Const.stopFlg = true;
+        Const.stopFlg = true;
         try {
             TimeUnit.SECONDS.sleep(5);
         } catch (InterruptedException interruptedException) {
@@ -166,7 +166,7 @@ public class MainForm extends JFrame {
         TblJobInfoService tblJobInfoService = new TblJobInfoService();
         tblJobInfoService.updateJobInfoEndTimeByJobIDForStop(Const.jobID,Const.kannseiNum);
         //结束主线程
-        System.exit(0);
+        //System.exit(0);
     }
 
     private void initComponents() {

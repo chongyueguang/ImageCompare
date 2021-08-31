@@ -35,7 +35,7 @@ public class WaitWork extends SwingWorker {
 
     @Override
     protected Object doInBackground() throws Exception {
-        LogUtils.info("等待线程启动");
+        LogUtils.info("wait thread start");
         TblJobInfoService tblJobInfoService = new TblJobInfoService();
         boolean status = tblJobInfoService.getJobInfoStatus(Const.jobID);
         while (firstFlg && status) {
@@ -48,7 +48,7 @@ public class WaitWork extends SwingWorker {
             for (CompareFileModel compareFileModel:compareFileArr) { //遍历所有图片文件
                 LogUtils.info("--------------isCancelled()"+isCancelled()+"-----------------");
                 if (isCancelled()){
-                    LogUtils.info("--------------系统停止-----------------");
+                    LogUtils.info("--------------system stop-----------------");
                     break;
                 }
                 //对图片文件进行转码
