@@ -73,6 +73,42 @@ public class TblJobInfoDao extends JdbcBaseDao {
     }
 
     /**
+     * 待ち隊列を取得
+     *
+     * @return 待ち隊列
+     */
+    public List<Integer> getJobStatusListByJobID(int job_id) {
+        Connection con = getConnection();
+        if(con == null){
+            return null;
+        }
+        ResultSet rs = null;
+        try {
+            PreparedStatement pstate = con.prepareStatement("SELECT t.STATUS FROM tbl_job_info t where job_id < ? ;");
+            pstate.setInt(1,job_id);
+            rs = pstate.executeQuery();
+            List<Integer> list =new ArrayList<Integer>();
+            while (rs.next()) {
+                list.add(rs.getInt("STATUS"));
+            }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs == null) {
+                } else {
+                    rs.close();
+                }
+                con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
      * ステータスを取得
      *
      * @return
@@ -108,6 +144,7 @@ public class TblJobInfoDao extends JdbcBaseDao {
         }
         return -1;
     }
+
 
     /**
      * コンペア開始の時、jobテーブルを更新

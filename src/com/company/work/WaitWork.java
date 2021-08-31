@@ -25,7 +25,6 @@ public class WaitWork extends SwingWorker {
     private ArrayList<CompareFileModel> compareFileArr;
     private JTextField txt_new;
     private JTextField txt_old;
-    private static boolean firstFlg = true;
 
     public WaitWork(ArrayList<CompareFileModel> compareFileArr, JTextField txt_new, JTextField txt_old) {
         this.compareFileArr = compareFileArr;
@@ -38,9 +37,9 @@ public class WaitWork extends SwingWorker {
         LogUtils.info("wait thread start");
         TblJobInfoService tblJobInfoService = new TblJobInfoService();
         boolean status = tblJobInfoService.getJobInfoStatus(Const.jobID);
-        while (firstFlg && status) {
+        if (status) {
             tblJobInfoService.updateJobInfoStartTimeByJobID(Const.jobID);
-            Const.wb = ExcelUtil.getHSSFWorkbook("sheet1",null);
+            Const.wb = ExcelUtil.getHSSFWorkbook("sheet1",Const.wb);
             int concurrent = 3;//线程条数控制
             ExecutorService executor = Executors.newCachedThreadPool();
             final Semaphore semaphore = new Semaphore(concurrent);
@@ -138,7 +137,6 @@ public class WaitWork extends SwingWorker {
                 // 退出线程池
                 executor.shutdown();
                 tblJobInfoService.updateJobInfoEndTimeByJobID(Const.jobID,compareFileArr.size());
-                firstFlg = false;
             }
         }
         return null;

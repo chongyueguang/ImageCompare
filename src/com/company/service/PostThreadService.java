@@ -60,6 +60,7 @@ public class PostThreadService extends Thread implements Runnable {
                             LogUtils.info("线程："  + Thread.currentThread().getName() + "返信成功");
                             JSONObject datas = JSONObject.parseObject(result);
                             runThreadResModel.setResultInfoModel(datas.toJavaObject(ResultInfoModel.class));
+                            Const.runThreadResModels.add(runThreadResModel);
                             CompareFileModel compareFileModel = runThreadResModel.getCompareFileModel();
                             String oldFolder = txt_old.getText();
                             oldFolder = oldFolder.substring(oldFolder.lastIndexOf("\\"),oldFolder.length()) ;
@@ -72,7 +73,6 @@ public class PostThreadService extends Thread implements Runnable {
                             ImageChangeUtils.joinImage(new File(txt_new.getText() +"\\RESULT\\TEMPOLD\\"+ compareFileModel.getKey()),
                                     new File(txt_new.getText() +"\\RESULT\\TEMPNEW\\"+ compareFileModel.getKey()),
                                     txt_new.getText() +"\\RESULT\\比較結果\\"+ compareFileModel.getKey());
-                            Const.runThreadResModels.add(runThreadResModel);
                         }
                     }, new FailListener() {
                         @Override

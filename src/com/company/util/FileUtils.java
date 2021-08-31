@@ -159,4 +159,24 @@ public class FileUtils {
 
     }
 
+    /**
+     *
+     * @param folderList 子フォルダのリスト
+     * @param path 親フォルダのパス
+     * @return
+     */
+    public static ArrayList<String> getAllPath(ArrayList<String> folderList,String path){
+
+        File dir = new File(path);
+        File[] list = dir.listFiles();
+        for (File f:list) {
+            if( f.isDirectory()&& !f.getAbsolutePath().contains("RESULT")){
+                folderList.add(f.getName());
+                getAllPath( folderList,f.getAbsolutePath().toString() );
+            }
+        }
+        System.out.print(folderList);
+        return folderList;
+    }
+
 }

@@ -66,11 +66,11 @@ public class MainForm extends JFrame {
         if(a == jfilechooser2.APPROVE_OPTION){
             File f = jfilechooser2.getSelectedFile();
             txt_new.setText(f.getAbsolutePath());
-            tMap = new HashMap<>();
-            //propertiesファイルによって、ignoreAreasを取得
-            Properties properties = FileUtils.getProperties(f);
-            //全体pngファイルを取得
-            tMap = FileUtils.getAllPngFiles(tMap,f,f.getAbsolutePath(),properties);
+//            tMap = new HashMap<>();
+//            //propertiesファイルによって、ignoreAreasを取得
+//            Properties properties = FileUtils.getProperties(f);
+//            //全体pngファイルを取得
+//            tMap = FileUtils.getAllPngFiles(tMap,f,f.getAbsolutePath(),properties);
         }
     }
 
@@ -81,7 +81,6 @@ public class MainForm extends JFrame {
      * @throws InterruptedException
      */
     private void btnRunActionPerformed(ActionEvent e) throws IOException, InterruptedException {
-
         //メールチェック
         if("".equals(txt_mail.getText()) || txt_mail.getText() == null){
             JOptionPane.showMessageDialog(null, "メールを入力してください。");
@@ -107,7 +106,6 @@ public class MainForm extends JFrame {
             LogUtils.error("ファイル格納場所(新)を入力してください。");
             return;
         }
-
         //创建RESULT文件夹
         File fileCompare = new File(txt_new.getText()+"\\RESULT\\比較結果");
         if((!fileCompare.exists()) && (!fileCompare.mkdirs())){
@@ -143,6 +141,41 @@ public class MainForm extends JFrame {
             LogUtils.error("TEMPNEW Folder作成失敗");
             return;
         }
+        //OLDフォルダの子フォルダ作成
+        ArrayList<String> oldFolderList = new ArrayList<>();
+        oldFolderList =FileUtils.getAllPath(oldFolderList,txt_old.getText());
+        for(int i = 0;i<oldFolderList.size();i++) {
+            File childFolder = new File(txt_new.getText()+"\\RESULT\\"+oldFolder + "\\" + oldFolderList.get(i));
+            if((!childFolder.exists()) && (!childFolder.mkdirs())){
+                JOptionPane.showMessageDialog(null, "比較結果Folder作成失敗");
+                LogUtils.error("比較結果Folder作成失敗" + childFolder);
+                return;
+            }
+        }
+        //NEWフォルダの子フォルダ作成
+        ArrayList<String> newFolderList = new ArrayList<>();
+        newFolderList =FileUtils.getAllPath(newFolderList,txt_new.getText());
+        for(int i = 0;i<newFolderList.size();i++) {
+            File childFolder = new File(txt_new.getText()+"\\RESULT\\"+newFolder + "\\" + newFolderList.get(i));
+            if((!childFolder.exists()) && (!childFolder.mkdirs())){
+                JOptionPane.showMessageDialog(null, "比較結果Folder作成失敗");
+                LogUtils.error("比較結果Folder作成失敗" + childFolder);
+                return;
+            }
+        }
+
+        File f1 = jfilechooser1.getSelectedFile();
+        fMap = new HashMap<>();
+        //propertiesファイルによって、ignoreAreasを取得
+        Properties properties1 = FileUtils.getProperties(f1);
+        //全体pngファイルを取得
+        fMap = FileUtils.getAllPngFiles(fMap,f1,f1.getAbsolutePath(),properties1);
+        File f2 = jfilechooser2.getSelectedFile();
+        tMap = new HashMap<>();
+        //propertiesファイルによって、ignoreAreasを取得
+        Properties properties2 = FileUtils.getProperties(f2);
+        //全体pngファイルを取得
+        tMap = FileUtils.getAllPngFiles(tMap,f2,f2.getAbsolutePath(),properties2);
 
         //比較ファイルを取得
         ArrayList<CompareFileModel> compareFileArr = FileUtils.getCompareFileArr(fMap, tMap);
@@ -161,52 +194,57 @@ public class MainForm extends JFrame {
     }
 
     private void btnStopActionPerformed(ActionEvent e) {
-        waitWork.cancel(true);
-        //改变停止flg
-        Const.stopFlg = true;
+        if(waitWork != null){
+            waitWork.cancel(true);
+            //改变停止flg
+            Const.stopFlg = true;
 
-        for (RunThreadResModel runThreadResModel : Const.runThreadResModels) {
-            int i = 0;
             try {
-                ResultInfoModel resultInfoModel1 = runThreadResModel.getResultInfoModel();
-                CompareFileModel compareFileModel = runThreadResModel.getCompareFileModel();
-                try {
-                    Const.wb = ExcelUtil.setHSSFWorkbookValue("sheet1", Const.wb, i, resultInfoModel1, compareFileModel, txt_new,txt_old);
-                    i++;
-                    Const.kannseiNum = i;
-                }catch (Exception ex){
-                    LogUtils.error(ex.getMessage());
-                }
-            } catch (Exception e1) {
-                e1.printStackTrace();
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException interruptedException) {
+                interruptedException.printStackTrace();
             }
-        }
-        Date date1 = new Date();	//创建一个date对象
-        DateFormat format=new SimpleDateFormat("yyyyMMddHHmmss"); //定义格式
-        FileOutputStream os = null;
-        try {
-            os = new FileOutputStream(txt_new.getText() +"\\RESULT\\比較結果レポート"+format.format(date1)+".xls");
-            //OutputStreamWriter osr = new OutputStreamWriter(new FileOutputStream(txt_new.getText() + "\\RESULT\\比較結果レポート" + format.format(date1) + ".xls"), "utf-8");
-            Const.wb.write(os);
-            os.flush();
-            os.close();
-            FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPOLD"));
-            FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPNEW"));
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
+
+            for (RunThreadResModel runThreadResModel : Const.runThreadResModels) {
+                int i = 0;
+                try {
+                    ResultInfoModel resultInfoModel1 = runThreadResModel.getResultInfoModel();
+                    CompareFileModel compareFileModel = runThreadResModel.getCompareFileModel();
+                    try {
+                        Const.wb = ExcelUtil.setHSSFWorkbookValue("sheet1", Const.wb, i, resultInfoModel1, compareFileModel, txt_new,txt_old);
+                        i++;
+                        Const.kannseiNum = i;
+                    }catch (Exception ex){
+                        LogUtils.error(ex.getMessage());
+                        ex.printStackTrace();
+                    }
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+            Date date1 = new Date();
+            DateFormat format=new SimpleDateFormat("yyyyMMddHHmmss");
+            FileOutputStream os = null;
+            try {
+                os = new FileOutputStream(txt_new.getText() +"\\RESULT\\比較結果レポート"+format.format(date1)+".xls");
+                //OutputStreamWriter osr = new OutputStreamWriter(new FileOutputStream(txt_new.getText() + "\\RESULT\\比較結果レポート" + format.format(date1) + ".xls"), "utf-8");
+                Const.wb.write(os);
+                os.flush();
+                os.close();
+                FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPOLD"));
+                FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPNEW"));
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+
+            //更改本条数据的状态
+            TblJobInfoService tblJobInfoService = new TblJobInfoService();
+            tblJobInfoService.updateJobInfoEndTimeByJobIDForStop(Const.jobID,Const.kannseiNum);
         }
 
-        //更改本条数据的状态
-        TblJobInfoService tblJobInfoService = new TblJobInfoService();
-        tblJobInfoService.updateJobInfoEndTimeByJobIDForStop(Const.jobID,Const.kannseiNum);
-
-        try {
-            TimeUnit.SECONDS.sleep(5);
-        } catch (InterruptedException interruptedException) {
-            interruptedException.printStackTrace();
-        }
         //结束主线程
-        //System.exit(0);
+        System.exit(0);
     }
 
     private void initComponents() {
@@ -234,6 +272,9 @@ public class MainForm extends JFrame {
         setResizable(false);
         setVisible(true);
         Container contentPane = getContentPane();
+
+        txt_new.setEnabled(false);
+        txt_old.setEnabled(false);
 
         //---- label1 ----
         label1.setText("\u73fe\u65b0\u6bd4\u8f03\u5b9f\u65bd");

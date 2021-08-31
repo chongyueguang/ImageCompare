@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 public class TblJobInfoService {
     /* タイムアウト時間(単位：秒) */
@@ -116,16 +117,18 @@ public class TblJobInfoService {
     }
 
     public Boolean getJobInfoStatus(int job_id){
-        boolean runFlg = true;
         tblJobInfoDao = new TblJobInfoDao();
-        List<TblJobInfoEntity> jobInfoByTbl = tblJobInfoDao.getJobInfoByTbl();
-        for (TblJobInfoEntity tblJobInfoEntity :jobInfoByTbl) {
-            if(tblJobInfoEntity.getJob_id() != job_id){
-                if(tblJobInfoEntity.getStatus() == 1 || tblJobInfoEntity.getStatus() == 2){
-                    runFlg = false;
+        List<Integer> statusList = tblJobInfoDao.getJobStatusListByJobID(job_id);
+        for (Integer status :statusList) {
+            if(status == 1 || status == 2){
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                    getJobInfoStatus(job_id);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
-        return runFlg;
+        return true;
     }
 }
