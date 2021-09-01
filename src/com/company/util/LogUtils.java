@@ -33,16 +33,13 @@ public class LogUtils {
 	}
 
 	private static StackTraceElement findCaller() {
-		// 获取堆栈信息
+		// スタック情報を取得する
 		StackTraceElement[] callStack = Thread.currentThread().getStackTrace();
-
-		// 最原始被调用的堆栈信息
 		StackTraceElement caller = null;
 
-		// 日志类名称
+		// ログクラス名
 		String logClassName = LogUtils.class.getName();
-		// 循环遍历到日志类标识
-
+		// クラスIDをログに記録するためのループ
 		int i = 0;
 		for (int len = callStack.length; i < len; i++) {
 			if (logClassName.equals(callStack[i].getClassName())) {

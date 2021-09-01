@@ -22,9 +22,9 @@ public class TblJobInfoService {
         List<TblJobInfoEntity> jobInfoByTbl = tblJobInfoDao.getJobInfoByTbl();
         for (TblJobInfoEntity tblJobInfoEntity :jobInfoByTbl) {
             Vector<Object> jTableInfoBeanVector = new Vector<Object>();
-            //邮箱
+            //メール
             jTableInfoBeanVector.add(tblJobInfoEntity.getMail_address());
-            //状态
+            //ステータス
             switch (tblJobInfoEntity.getStatus()){
                 case 1:
                     jTableInfoBeanVector.add("実行中");
@@ -39,7 +39,7 @@ public class TblJobInfoService {
                     jTableInfoBeanVector.add("エラー");
                     break;
             }
-            //预测时间
+            //予測時間
             if(tblJobInfoEntity.getStatus() != 1 ){
                 jTableInfoBeanVector.add("0");
             }else {
@@ -54,17 +54,17 @@ public class TblJobInfoService {
                     jTableInfoBeanVector.add("");
                 }
             }
-            //完了比例
+            //完成率
             jTableInfoBeanVector.add(tblJobInfoEntity.getKannsei_num()+"/"+tblJobInfoEntity.getGamen_num());
-            //投入时间
+            //Regist時間
             jTableInfoBeanVector.add(tblJobInfoEntity.getRegist_time().toString());
-            //开始时间
+            //開始時間
             if(tblJobInfoEntity.getStart_time() != null){
                 jTableInfoBeanVector.add(tblJobInfoEntity.getStart_time().toString());
             }else {
                 jTableInfoBeanVector.add("");
             }
-            //更新时间
+            //更新時間
             if(tblJobInfoEntity.getUpdate_time() != null){
                 jTableInfoBeanVector.add(tblJobInfoEntity.getUpdate_time().toString());
             }else {
@@ -81,12 +81,19 @@ public class TblJobInfoService {
         int runTime = 65;
         tblJobInfoDao = new TblJobInfoDao();
         boolean updFlg = tblJobInfoDao.updateJobTblToInit(runTime);
-        LogUtils.info("运行时间过长，状态更新结果：" + updFlg);
+        LogUtils.info("実行時間が長すぎる，ステータス更新結果：" + updFlg);
     }
 
     public int insertJobInfoByJobID(String mailAddress,int totalCount){
         tblJobInfoDao = new TblJobInfoDao();
-        int jobID = tblJobInfoDao.insertJobQueue(mailAddress, totalCount);
+        int insertFlg = 0 ;
+        List<TblJobInfoEntity> jobInfoByTbl = tblJobInfoDao.getJobInfoByTbl();
+        for (TblJobInfoEntity tblJobInfoEntity :jobInfoByTbl){
+            if(tblJobInfoEntity.getStatus() == 1 || tblJobInfoEntity.getStatus() == 2){
+                insertFlg = 1;
+            }
+        }
+        int jobID = tblJobInfoDao.insertJobQueue(mailAddress, totalCount,insertFlg);
         return jobID;
     }
 

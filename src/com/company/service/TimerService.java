@@ -1,14 +1,7 @@
 package com.company.service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.company.Const;
-import com.company.model.*;
-import com.company.service.TblJobInfoService;
-import com.company.util.ExcelUtil;
-import com.company.util.FileUtils;
-import com.company.util.ImageChangeUtils;
-import com.company.util.LogUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import com.company.util.UpdateTableUIUtils;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -16,19 +9,12 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
 
 public class TimerService {
 
-    // 画面更新時間
+    // 画面の更新時間
     private static String refreshTime;
-    // リクエスト更新時間
-    //private static String waitTime;
-
-    private static boolean firstFlg = true;
 
     static {
         try {
@@ -59,12 +45,7 @@ public class TimerService {
                 }
                 //更新
                 tblJobInfoService.updateJobInfoStatusByTime();
-                DefaultTableModel dtm2=(DefaultTableModel)jTable.getModel();
-                dtm2.setDataVector(tblJobInfoService.getJobInfoByListToVector(),vectorHeader);
-                jTable.validate();
-                jTable.updateUI();
-                jScrollPane.validate();
-                jScrollPane.updateUI();
+                UpdateTableUIUtils.UpdTblUI(jScrollPane,jTable,vectorHeader,tblJobInfoService.getJobInfoByListToVector());
             }
         }).start();
     }

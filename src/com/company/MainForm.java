@@ -6,25 +6,21 @@ package com.company;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.table.*;
 import com.company.model.*;
 import com.company.service.TblJobInfoService;
-import com.company.util.ExcelUtil;
+import com.company.util.ExcelUtils;
 import com.company.util.FileUtils;
 import com.company.util.LogUtils;
 import com.company.service.TimerService;
+import com.company.util.UpdateTableUIUtils;
 import com.company.work.WaitWork;
 
 /**
@@ -47,11 +43,6 @@ public class MainForm extends JFrame {
         if(a == jfilechooser1.APPROVE_OPTION){
             File f = jfilechooser1.getSelectedFile();
             txt_old.setText(f.getAbsolutePath());
-            fMap = new HashMap<>();
-            //propertiesファイルによって、ignoreAreasを取得
-            Properties properties = FileUtils.getProperties(f);
-            //全体pngファイルを取得
-            fMap = FileUtils.getAllPngFiles(fMap,f,f.getAbsolutePath(),properties);
         }
     }
 
@@ -66,11 +57,6 @@ public class MainForm extends JFrame {
         if(a == jfilechooser2.APPROVE_OPTION){
             File f = jfilechooser2.getSelectedFile();
             txt_new.setText(f.getAbsolutePath());
-//            tMap = new HashMap<>();
-//            //propertiesファイルによって、ignoreAreasを取得
-//            Properties properties = FileUtils.getProperties(f);
-//            //全体pngファイルを取得
-//            tMap = FileUtils.getAllPngFiles(tMap,f,f.getAbsolutePath(),properties);
         }
     }
 
@@ -81,6 +67,9 @@ public class MainForm extends JFrame {
      * @throws InterruptedException
      */
     private void btnRunActionPerformed(ActionEvent e) throws IOException, InterruptedException {
+        btn_run.setEnabled(true);
+        File f1 = jfilechooser1.getSelectedFile();
+        File f2 = jfilechooser2.getSelectedFile();
         //メールチェック
         if("".equals(txt_mail.getText()) || txt_mail.getText() == null){
             JOptionPane.showMessageDialog(null, "メールを入力してください。");
@@ -143,10 +132,11 @@ public class MainForm extends JFrame {
         }
         //OLDフォルダの子フォルダ作成
         ArrayList<String> oldFolderList = new ArrayList<>();
-        oldFolderList =FileUtils.getAllPath(oldFolderList,txt_old.getText());
+        oldFolderList =FileUtils.getAllPath(oldFolderList,f1,txt_old.getText());
         for(int i = 0;i<oldFolderList.size();i++) {
             File childFolder = new File(txt_new.getText()+"\\RESULT\\"+oldFolder + "\\" + oldFolderList.get(i));
-            File childTempFolder = new File(txt_new.getText()+"\\RESULT\\TEMPOLD\\"+oldFolder + "\\" + oldFolderList.get(i));
+            File childTempFolder = new File(txt_new.getText()+"\\RESULT\\TEMPOLD\\" + oldFolderList.get(i));
+            File compareChildFolder = new File(txt_new.getText()+"\\RESULT\\比較結果\\" + oldFolderList.get(i));
             if((!childFolder.exists()) && (!childFolder.mkdirs())){
                 JOptionPane.showMessageDialog(null, "比較結果Folder作成失敗");
                 LogUtils.error("比較結果Folder作成失敗" + childFolder);
@@ -154,16 +144,21 @@ public class MainForm extends JFrame {
             }
             if((!childTempFolder.exists()) && (!childTempFolder.mkdirs())){
                 JOptionPane.showMessageDialog(null, "比較結果TEMP Folder作成失敗");
-                LogUtils.error("比較結果Folder作成失敗" + childTempFolder);
+                LogUtils.error("比較結果TEMP Folder作成失敗" + childTempFolder);
+                return;
+            }
+            if((!compareChildFolder.exists()) && (!compareChildFolder.mkdirs())){
+                JOptionPane.showMessageDialog(null, "比較結果Compare Folder作成失敗");
+                LogUtils.error("比較結果Compare Folder作成失敗" + compareChildFolder);
                 return;
             }
         }
         //NEWフォルダの子フォルダ作成
         ArrayList<String> newFolderList = new ArrayList<>();
-        newFolderList =FileUtils.getAllPath(newFolderList,txt_new.getText());
+        newFolderList =FileUtils.getAllPath(newFolderList,f2,txt_new.getText());
         for(int i = 0;i<newFolderList.size();i++) {
-            File childFolder = new File(txt_new.getText()+"\\RESULT\\"+newFolder + "\\" + newFolderList.get(i));
-            File childTempFolder = new File(txt_new.getText()+"\\RESULT\\TEMPNEW\\"+newFolder + "\\" + newFolderList.get(i));
+            File childFolder = new File(txt_new.getText()+"\\RESULT\\"+ newFolder + "\\" + newFolderList.get(i));
+            File childTempFolder = new File(txt_new.getText()+"\\RESULT\\TEMPNEW\\" + newFolderList.get(i));
             if((!childFolder.exists()) && (!childFolder.mkdirs())){
                 JOptionPane.showMessageDialog(null, "比較結果Folder作成失敗");
                 LogUtils.error("比較結果Folder作成失敗" + childFolder);
@@ -176,14 +171,21 @@ public class MainForm extends JFrame {
             }
         }
 
-        File f1 = jfilechooser1.getSelectedFile();
+        Properties prop = new Properties();
+//        FileOutputStream fileOutputStream = new FileOutputStream(MainForm.class.getResource("/temp.properties").getFile());
+//        String confPath = System.getProperty("user.dir") + "\\temp.properties";
+//        FileOutputStream fileOutputStream = new FileOutputStream(confPath);
+//        prop.setProperty("mainAddress", txt_mail.getText());
+//        prop.store(fileOutputStream, new Date().toString());
+//        fileOutputStream.flush();
+//        fileOutputStream.close();
+
         fMap = new HashMap<>();
         //propertiesファイルによって、ignoreAreasを取得
         Properties properties1 = FileUtils.getProperties(f1);
         //全体pngファイルを取得
         fMap = FileUtils.getAllPngFiles(fMap,f1,f1.getAbsolutePath(),properties1);
 
-        File f2 = jfilechooser2.getSelectedFile();
         tMap = new HashMap<>();
         //propertiesファイルによって、ignoreAreasを取得
         Properties properties2 = FileUtils.getProperties(f2);
@@ -200,61 +202,66 @@ public class MainForm extends JFrame {
         TblJobInfoService tblJobInfoService = new TblJobInfoService();
         //insert data
         Const.jobID = tblJobInfoService.insertJobInfoByJobID(txt_mail.getText(), compareFileArr.size());
-
+        UpdateTableUIUtils.UpdTblUI(scrollPane1,table1,column,tblJobInfoService.getJobInfoByListToVector());
         waitWork = new WaitWork(compareFileArr,txt_new,txt_old);
 
         waitWork.execute();
+        btn_run.setEnabled(false);
     }
 
     private void btnStopActionPerformed(ActionEvent e) {
-        if(waitWork != null){
-            waitWork.cancel(true);
-            //改变停止flg
-            Const.stopFlg = true;
+        if(Const.successRunFlg != 2){
+            if(waitWork != null){
+                waitWork.cancel(true);
+                //ストップの変更flg
+                Const.stopFlg = true;
 
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException interruptedException) {
-                interruptedException.printStackTrace();
-            }
-
-            for (RunThreadResModel runThreadResModel : Const.runThreadResModels) {
-                int i = 0;
-                try {
-                    ResultInfoModel resultInfoModel1 = runThreadResModel.getResultInfoModel();
-                    CompareFileModel compareFileModel = runThreadResModel.getCompareFileModel();
+                if(Const.successRunFlg == 1){
                     try {
-                        Const.wb = ExcelUtil.setHSSFWorkbookValue("sheet1", Const.wb, i, resultInfoModel1, compareFileModel, txt_new,txt_old);
-                        i++;
-                        Const.kannseiNum = i;
-                    }catch (Exception ex){
-                        LogUtils.error(ex.getMessage());
-                        ex.printStackTrace();
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException interruptedException) {
+                        interruptedException.printStackTrace();
                     }
-                } catch (Exception e1) {
-                    e1.printStackTrace();
+
+                    int i = 0;
+                    for (RunThreadResModel runThreadResModel : Const.runThreadResModels) {
+
+                        try {
+                            ResultInfoModel resultInfoModel1 = runThreadResModel.getResultInfoModel();
+                            CompareFileModel compareFileModel = runThreadResModel.getCompareFileModel();
+                            try {
+                                Const.wb = ExcelUtils.setHSSFWorkbookValue("sheet1", Const.wb, i, resultInfoModel1, compareFileModel, txt_new,txt_old);
+                                i++;
+                                Const.kannseiNum = i;
+                            }catch (Exception ex){
+                                LogUtils.error(ex.getMessage());
+                                ex.printStackTrace();
+                            }
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+
+                    Date date1 = new Date();
+                    DateFormat format=new SimpleDateFormat("yyyyMMddHHmmss");
+                    FileOutputStream os = null;
+                    try {
+                        os = new FileOutputStream(txt_new.getText() +"\\RESULT\\比較結果レポート"+format.format(date1)+".xls");
+                        //OutputStreamWriter osr = new OutputStreamWriter(new FileOutputStream(txt_new.getText() + "\\RESULT\\比較結果レポート" + format.format(date1) + ".xls"), "utf-8");
+                        Const.wb.write(os);
+                        os.flush();
+                        os.close();
+                        FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPOLD"));
+                        FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPNEW"));
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
                 }
             }
-
-            Date date1 = new Date();
-            DateFormat format=new SimpleDateFormat("yyyyMMddHHmmss");
-            FileOutputStream os = null;
-            try {
-                os = new FileOutputStream(txt_new.getText() +"\\RESULT\\比較結果レポート"+format.format(date1)+".xls");
-                //OutputStreamWriter osr = new OutputStreamWriter(new FileOutputStream(txt_new.getText() + "\\RESULT\\比較結果レポート" + format.format(date1) + ".xls"), "utf-8");
-                Const.wb.write(os);
-                os.flush();
-                os.close();
-                FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPOLD"));
-                FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPNEW"));
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-
-            //更改本条数据的状态
-            TblJobInfoService tblJobInfoService = new TblJobInfoService();
-            tblJobInfoService.updateJobInfoEndTimeByJobIDForStop(Const.jobID,Const.kannseiNum);
         }
+        //このデータのステータスを変更します
+        TblJobInfoService tblJobInfoService = new TblJobInfoService();
+        tblJobInfoService.updateJobInfoEndTimeByJobIDForStop(Const.jobID,Const.kannseiNum);
 
         //结束主线程
         System.exit(0);
@@ -299,7 +306,7 @@ public class MainForm extends JFrame {
 
             //---- table1 ----
             TblJobInfoService tblJobInfoService = new TblJobInfoService();
-            Vector<String> column = new Vector<>();
+            column = new Vector<>();
             column.add("\u5b9f\u65bd\u8005");
             column.add("\u30b9\u30c6\u30fc\u30bf\u30b9");
             column.add("\u4e88\u6e2c\u5b8c\u4e86\u6642\u9593");
@@ -328,7 +335,7 @@ public class MainForm extends JFrame {
             table1.setBorder(UIManager.getBorder("EditorPane.border"));
             table1.setRowHeight(15);
             scrollPane1.setViewportView(table1);
-            //刷新画面定时器
+            //画面タイマーの定時更新
             TimerService.refreshScreenTimer(scrollPane1,table1,column);
         }
 
@@ -440,6 +447,21 @@ public class MainForm extends JFrame {
         pack();
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
+
+//        InputStream in = com.company.MainForm.class.getClassLoader().getResourceAsStream(".properties");
+//        String confPath = System.getProperty("user.dir") + "\\temp.properties";
+//        InputStream in = null;
+//        Properties props = new Properties();
+//        try {
+//            in = new BufferedInputStream(new FileInputStream(confPath));
+//            props.load(in);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        if(props != null){
+//            txt_mail.setText(props.getProperty("mailAddress"));
+//        }
+
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
@@ -463,4 +485,5 @@ public class MainForm extends JFrame {
     private HashMap<String, ImageAttributeModel> fMap;
     private HashMap<String, ImageAttributeModel> tMap;
     private WaitWork waitWork;
+    private Vector<String> column;
 }

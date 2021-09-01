@@ -13,11 +13,11 @@ import java.util.List;
 public class FileUtils {
 
     /**
-     * 获取指定文件夹路径下的全部以.png结尾的文件
-     * @param fileHashMap 空map集合
-     * @param file 指定路径下的文件夹
-     * @param path 指定根路径
-     * @return 以文件相对路径为key，文件为value的集合
+     * 指定されたフォルダーパスで.pngで終わるすべてのファイルを取得します
+     * @param fileHashMap 空のmapコレクション
+     * @param file 指定されたパスの下のフォルダー
+     * @param path ルートパスを指定します
+     * @return 相対ファイルパスをキーとして、ファイルを値のコレクションとして使用します
      */
     public static HashMap<String, ImageAttributeModel> getAllPngFiles(HashMap<String, ImageAttributeModel> fileHashMap, File file, String path,Properties pro){
         File[] listFiles = file.listFiles();
@@ -165,14 +165,13 @@ public class FileUtils {
      * @param path 親フォルダのパス
      * @return
      */
-    public static ArrayList<String> getAllPath(ArrayList<String> folderList,String path){
+    public static ArrayList<String> getAllPath(ArrayList<String> folderList,File file,String path){
 
-        File dir = new File(path);
-        File[] list = dir.listFiles();
+        File[] list = file.listFiles();
         for (File f:list) {
             if( f.isDirectory()&& !f.getAbsolutePath().contains("RESULT")){
-                folderList.add(f.getName());
-                getAllPath( folderList,f.getAbsolutePath().toString() );
+                folderList.add(f.getAbsolutePath().replace(path,""));
+                getAllPath( folderList,f,path);
             }
         }
         System.out.print(folderList);

@@ -211,8 +211,8 @@ public class TblJobInfoDao extends JdbcBaseDao {
      *
      * @return -1:エラーがある　-1以外：取得したJOB_ID
      */
-    public int insertJobQueue(String mailAdd, int totalCount) {
-        return insertJobQueue(getJobIDBySeq(), mailAdd, totalCount);
+    public int insertJobQueue(String mailAdd, int totalCount,int insertFlg) {
+        return insertJobQueue(getJobIDBySeq(), mailAdd, totalCount,insertFlg);
     }
 
     /**
@@ -220,7 +220,11 @@ public class TblJobInfoDao extends JdbcBaseDao {
      *
      * @return -1:エラーがある　-1以外：取得したJOB_ID
      */
-    private int insertJobQueue(int job_ID, String mailAdd, int totalCount) {
+    private int insertJobQueue(int job_ID, String mailAdd, int totalCount,int insertFlg) {
+        int runStatus = 1;
+        if (insertFlg == 1){
+            runStatus = 2;
+        }
         Connection con = getConnection();
         if(con == null){
             return 0;
@@ -244,7 +248,7 @@ public class TblJobInfoDao extends JdbcBaseDao {
                         "(" +
                         "  ?," +
                         "  ?," +
-                        "  2," +
+                        "  ?," +
                         "  ?," +
                         "  0," +
                         "  now()," +
@@ -255,7 +259,8 @@ public class TblJobInfoDao extends JdbcBaseDao {
                         " ");
                 pstate.setInt(1, job_ID);
                 pstate.setString(2, mailAdd);
-                pstate.setInt(3, totalCount);
+                pstate.setInt(3, runStatus);
+                pstate.setInt(4, totalCount);
                 pstate.execute();
                 return job_ID;
             }

@@ -53,11 +53,11 @@ public class PostThreadService extends Thread implements Runnable {
             try {
                 semaphore.acquire();
                 if(!Const.stopFlg){
-                    LogUtils.info("线程：" + Thread.currentThread().getName() +"进行中，可用残余线程数：" + semaphore.availablePermits());
+                    LogUtils.info("スレッド：" + Thread.currentThread().getName() +"進行中，利用可能な残りのスレッド：" + semaphore.availablePermits());
                     PostUtils.postWithParams(postUrl + "/api/diff", jsonData, new SuccessListener() {
                         @Override
                         public void success(String result) {
-                            LogUtils.info("线程："  + Thread.currentThread().getName() + "返信成功");
+                            LogUtils.info("スレッド："  + Thread.currentThread().getName() + "正常に返信する");
                             JSONObject datas = JSONObject.parseObject(result);
                             runThreadResModel.setResultInfoModel(datas.toJavaObject(ResultInfoModel.class));
                             Const.runThreadResModels.add(runThreadResModel);
@@ -77,15 +77,15 @@ public class PostThreadService extends Thread implements Runnable {
                     }, new FailListener() {
                         @Override
                         public void fail() throws Exception {
-                            //Const.stopFlg = true;
-                            LogUtils.error("线程："  + Thread.currentThread().getName() + "返信失败");
-                            throw new Exception("线程返信失败");
+                            Const.stopFlg = true;
+                            LogUtils.error("スレッド："  + Thread.currentThread().getName() + "異常に返信する");
+                            throw new Exception("スレッド異常に返信する");
                         }
                     });
                 }
             } catch (InterruptedException e) {
-                //Const.stopFlg = true;
-                LogUtils.error("线程："  + Thread.currentThread().getName() + "执行时，问题发生：" + e.getMessage());
+                Const.stopFlg = true;
+                LogUtils.error("スレッド："  + Thread.currentThread().getName() + "実行する時，問題が発生します：" + e.getMessage());
                 e.printStackTrace();
             } catch (Exception e) {
                 LogUtils.error(e.getMessage());

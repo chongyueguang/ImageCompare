@@ -26,8 +26,8 @@ public class PostUtils {
 
             HttpPost httpPost = new HttpPost(url);
             RequestConfig requestConfig = RequestConfig.custom()
-                    .setSocketTimeout(3000) //服务器响应超时时间
-                    .setConnectTimeout(3000) //连接服务器超时时间
+                    .setSocketTimeout(3000) //サーバー応答タイムアウト
+                    .setConnectTimeout(3000) //接続サーバーのタイムアウト
                     .build();
 
             httpPost.setConfig(requestConfig);
@@ -35,10 +35,10 @@ public class PostUtils {
             StringEntity entity = new StringEntity(jsonObject.toString(), "utf-8");
             httpPost.setEntity(entity);
             httpPost.setHeader("Content-Type", "application/json");
-            // 由客户端执行(发送)请求
+            // リクエストはクライアントによって実行（送信）されます
             response = httpClient.execute(httpPost);
 
-            // 从响应模型中获取响应实体
+            // 応答モデルから応答エンティティを取得します
             HttpEntity responseEntity = response.getEntity();
             //TODO
             LogUtils.warn("status:"+response.getStatusLine());
@@ -52,7 +52,7 @@ public class PostUtils {
             fListener.fail();
         } finally {
             try {
-                // 释放资源
+                // リソースを解放する
                 if (httpClient != null) {
                     httpClient.close();
                 }

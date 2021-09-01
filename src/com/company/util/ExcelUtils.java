@@ -9,22 +9,21 @@ import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import javax.swing.*;
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class ExcelUtil {
+public class ExcelUtils {
 
     /**
-     * 导出Excel
-     * @param sheetName sheet名称
-     * @param wb HSSFWorkbook对象
+     * 書き出すExcel
+     * @param sheetName sheet名前
+     * @param wb HSSFWorkbook
      * @return
      */
     public static HSSFWorkbook getHSSFWorkbook(String sheetName,HSSFWorkbook wb){
 
-        //excel标题
+        //excelタイトル
         String[] title1 = {"実行日","期待値ファイル","検証ファイル","比較結果ファイル","AIエンジン結果","","","期待値ファイル\n" +
                 "マスク情報"};
         String[] title2 = {"検証ファイル\n" +
@@ -33,24 +32,19 @@ public class ExcelUtil {
         String[] title3 = {"","","","","精度","ステータス","比較結果",""};
         String[] title4 = {"","","検証者","検証時間","コメント","検証者","検証時間","コメント","検証者","検証時間","コメント"};
 
-        // 第一步，创建一个HSSFWorkbook，对应一个Excel文件
         if(wb == null){
             wb = new HSSFWorkbook();
         }
 
-        // 第二步，在workbook中添加一个sheet,对应Excel文件中的sheet
         HSSFSheet sheet = wb.createSheet(sheetName);
 
-        // 第三步，在sheet中添加表头第0行,注意老版本poi对Excel的行数列数有限制
         HSSFRow row1 = sheet.createRow(0);
         row1.setHeightInPoints(20);
         HSSFRow row2 = sheet.createRow(1);
         row2.setHeightInPoints((float) 33.75);
 
-        // 第四步，创建单元格，并设置值表头 设置表头居中
         HSSFCellStyle style1 = wb.createCellStyle();
-        style1.setAlignment(HSSFCellStyle.ALIGN_CENTER); // 创建一个居中格式
-        // 居中格式
+        style1.setAlignment(HSSFCellStyle.ALIGN_CENTER);
         style1.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
         style1.setBottomBorderColor(HSSFColor.BLACK.index);
         style1.setBorderBottom(HSSFCellStyle.BORDER_THIN);
@@ -61,21 +55,14 @@ public class ExcelUtil {
         style1.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
         style1.setFillForegroundColor(HSSFColor.YELLOW.index);
         style1.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
-        // 创建字体样式
         HSSFFont headerFont1 = (HSSFFont) wb.createFont();
-        // 字体加粗
         headerFont1.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-        // 设置字体类型
         headerFont1.setFontName("ＭＳ Ｐゴシック");
-        // 设置字体大小
         headerFont1.setFontHeightInPoints((short) 11);
-        // 为标题样式设置字体样式
         style1.setFont(headerFont1);
 
-        // 第四步，创建单元格，并设置值表头 设置表头居中
         HSSFCellStyle style2 = wb.createCellStyle();
-        style2.setAlignment(HSSFCellStyle.ALIGN_CENTER); // 创建一个居中格式
-        // 居中格式
+        style2.setAlignment(HSSFCellStyle.ALIGN_CENTER);
         style2.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
         style2.setBottomBorderColor(HSSFColor.BLACK.index);
         style2.setBorderBottom(HSSFCellStyle.BORDER_THIN);
@@ -86,34 +73,25 @@ public class ExcelUtil {
         style2.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
         style2.setFillForegroundColor(HSSFColor.PALE_BLUE.index);
         style2.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
-        // 创建字体样式
         HSSFFont headerFont2 = (HSSFFont) wb.createFont();
-        // 字体加粗
         headerFont2.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-        // 设置字体类型
         headerFont2.setFontName("ＭＳ Ｐゴシック");
-        // 设置字体大小
         headerFont2.setFontHeightInPoints((short) 11);
-        // 为标题样式设置字体样式
         style2.setFont(headerFont2);
 
-        //声明列对象
         HSSFCell cell1 = null;
         HSSFCell cell2 = null;
 
-        //创建标题
         for(int i=0;i<title1.length;i++){
             cell1 = row1.createCell(i);
             cell1.setCellValue(title1[i]);
             cell1.setCellStyle(style1);
         }
-        //创建标题
         for(int i=0;i<title3.length;i++){
             cell2 = row2.createCell(i);
             cell2.setCellValue(title3[i]);
             cell2.setCellStyle(style1);
         }
-        //创建标题
         for(int j=0;j<title2.length;j++){
             cell1 = row1.createCell(title1.length+j);
             cell1.setCellValue(title2[j]);
@@ -173,10 +151,8 @@ public class ExcelUtil {
     public static HSSFWorkbook setHSSFWorkbookValue(String sheetName, HSSFWorkbook wb, int rowNum, ResultInfoModel resultInfoModel, CompareFileModel compareFileModel, JTextField txt_new, JTextField txt_old){
         HSSFSheet sheet = wb.getSheet(sheetName);
         HSSFRow row3 = sheet.createRow(rowNum + 2);
-        //创建单元格，并设置值表头 设置表头居中
         HSSFCellStyle style3 = wb.createCellStyle();
-        style3.setAlignment(HSSFCellStyle.ALIGN_CENTER); // 创建一个居中格式
-        // 居中格式
+        style3.setAlignment(HSSFCellStyle.ALIGN_CENTER);
         style3.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
         style3.setBottomBorderColor(HSSFColor.BLACK.index);
         style3.setBorderBottom(HSSFCellStyle.BORDER_THIN);
@@ -184,19 +160,13 @@ public class ExcelUtil {
         style3.setBorderRight(HSSFCellStyle.BORDER_THIN);
         style3.setBorderTop(HSSFCellStyle.BORDER_THIN);
         style3.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
-        // 创建字体样式
         HSSFFont headerFont3 = (HSSFFont) wb.createFont();
-        // 字体加粗
         headerFont3.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-        // 设置字体类型
         headerFont3.setFontName("ＭＳ Ｐゴシック");
-        // 设置字体大小
         headerFont3.setFontHeightInPoints((short) 11);
-        // 为标题样式设置字体样式
         style3.setFont(headerFont3);
 
         HSSFCell cell = null;
-        //创建内容
         //実行日
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
         HSSFCell cell1 = row3.createCell(0);
@@ -238,10 +208,10 @@ public class ExcelUtil {
         //比較結果
         HSSFCell cell7 = row3.createCell(6);
         if(!"success".equals(resultInfoModel.getMessage())){
-            cell6.setCellValue("正常");
+            cell6.setCellValue("異常");
             cell7.setCellValue("-");
         }else {
-            cell6.setCellValue("異常");
+            cell6.setCellValue("正常");
             cell7.setCellValue(resultInfoModel.getData().getDiffResult());
         }
         cell7.setCellStyle(style3);

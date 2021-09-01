@@ -5,11 +5,10 @@ import com.company.Const;
 import com.company.model.*;
 import com.company.service.PostThreadService;
 import com.company.service.TblJobInfoService;
-import com.company.util.ExcelUtil;
+import com.company.util.ExcelUtils;
 import com.company.util.FileUtils;
 import com.company.util.ImageChangeUtils;
 import com.company.util.LogUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,14 +37,15 @@ public class WaitWork extends SwingWorker {
         TblJobInfoService tblJobInfoService = new TblJobInfoService();
         boolean status = tblJobInfoService.getJobInfoStatus(Const.jobID);
         if (status) {
-            tblJobInfoService.updateJobInfoStartTimeByJobID(Const.jobID);
-            Const.wb = ExcelUtil.getHSSFWorkbook("sheet1",Const.wb);
-            int concurrent = 3;//线程条数控制
+            //tblJobInfoService.updateJobInfoStartTimeByJobID(Const.jobID);
+            Const.wb = ExcelUtils.getHSSFWorkbook("sheet1",Const.wb);
+            //スレッドカウント制御
+            int concurrent = 3;
             ExecutorService executor = Executors.newCachedThreadPool();
             final Semaphore semaphore = new Semaphore(concurrent);
             List<Future<RunThreadResModel>> futures = new CopyOnWriteArrayList<>();
-            for (CompareFileModel compareFileModel:compareFileArr) { //遍历所有图片文件
-                LogUtils.info("--------------isCancelled()"+isCancelled()+"-----------------");
+            //すべての画像ファイルをトラバースします
+            for (CompareFileModel compareFileModel:compareFileArr) {
                 if (isCancelled()){
                     LogUtils.info("--------------system stop-----------------");
                     break;
@@ -94,47 +94,52 @@ public class WaitWork extends SwingWorker {
                     futures.add(future);
                 }
             }
-            //响应到客户端
+            //クライアントに応答する
             try {
+                int i = 0;
                 for (Future<RunThreadResModel> future : futures) {
-                    int i = 0;
                     try {
-                        if(isCancelled()){
+                        if(!isCancelled()){
                             RunThreadResModel runThreadResModel = future.get();
                             ResultInfoModel resultInfoModel1 = runThreadResModel.getResultInfoModel();
-                            CompareFileModel compareFileModel = runThreadResModel.getCompareFileModel();
-                            try {
-                                Const.wb = ExcelUtil.setHSSFWorkbookValue("sheet1", Const.wb, i, resultInfoModel1, compareFileModel, txt_new,txt_old);
-                                i++;
-                                Const.kannseiNum = i;
-                            }catch (Exception ex){
-                                LogUtils.error(ex.getMessage());
+                            if(resultInfoModel1 != null){
+                                CompareFileModel compareFileModel = runThreadResModel.getCompareFileModel();
+                                try {
+                                    Const.wb = ExcelUtils.setHSSFWorkbookValue("sheet1", Const.wb, i, resultInfoModel1, compareFileModel, txt_new,txt_old);
+                                    i++;
+                                    Const.kannseiNum = i;
+                                }catch (Exception ex){
+                                    LogUtils.error(ex.getMessage());
+                                    ex.printStackTrace();
+                                }
                             }
                         }
 
                     } catch (InterruptedException interruptedException) {
+                        LogUtils.error(interruptedException.getMessage());
                         interruptedException.printStackTrace();
                     } catch (ExecutionException executionException) {
+                        LogUtils.error(executionException.getMessage());
                         executionException.printStackTrace();
                     }
                 }
-                if(isCancelled()){
-                    Date date1 = new Date();	//创建一个date对象
-                    DateFormat format=new SimpleDateFormat("yyyyMMddHHmmss"); //定义格式
+                if(!isCancelled()){
+                    //日付オブジェクトを作成する
+                    Date date1 = new Date();
+                    DateFormat format=new SimpleDateFormat("yyyyMMddHHmmss");
                     FileOutputStream os = new FileOutputStream(txt_new.getText() +"\\RESULT\\比較結果レポート"+format.format(date1)+".xls");
-                    //OutputStreamWriter osr = new OutputStreamWriter(new FileOutputStream(txt_new.getText() + "\\RESULT\\比較結果レポート" + format.format(date1) + ".xls"), "utf-8");
                     Const.wb.write(os);
                     os.flush();
                     os.close();
                     FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPOLD"));
                     FileUtils.deleteFolder(new File(txt_new.getText() +"\\RESULT\\TEMPNEW"));
+                    Const.successRunFlg = 2;
                 }
-
             } catch (Exception ex) {
                 LogUtils.error(ex.getMessage());
                 ex.printStackTrace();
             }finally {
-                // 退出线程池
+                // スレッドプールを終了します
                 executor.shutdown();
                 tblJobInfoService.updateJobInfoEndTimeByJobID(Const.jobID,compareFileArr.size());
             }

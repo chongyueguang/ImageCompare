@@ -3,8 +3,6 @@ package com.company.util;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
 import Decoder.BASE64Decoder;
 import Decoder.BASE64Encoder;
@@ -14,9 +12,9 @@ import javax.imageio.ImageIO;
 public class ImageChangeUtils {
 
     /**
-     * 图片转base64字符串
+     * base64文字列への画像
      *
-     * @param file 图片文件
+     * @param file 画像ファイル
      * @return
      */
     public static String imageToBase64ByFile(File file) throws IOException {
@@ -30,16 +28,16 @@ public class ImageChangeUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // 加密
+        // 暗号化
         BASE64Encoder encoder = new BASE64Encoder();
         return encoder.encode(data);
     }
 
     /**
-     * base64编码字符串转换为图片,并写入文件
+     * base64でエンコードされた文字列を画像に変換し、ファイルに書き込みます
      *
-     * @param imgStr base64编码字符串
-     * @param path   图片路径
+     * @param imgStr base64エンコーディング文字列
+     * @param path   ピクチャーパス
      * @return
      */
     public static boolean base64StrToImage(String imgStr, String path) {
@@ -47,15 +45,15 @@ public class ImageChangeUtils {
             return false;
         BASE64Decoder decoder = new BASE64Decoder();
         try {
-            // 解密
+            // 復号化
             byte[] b = decoder.decodeBuffer(imgStr);
-            // 处理数据
+            // データ処理
             for (int i = 0; i < b.length; ++i) {
                 if (b[i] < 0) {
                     b[i] += 256;
                 }
             }
-            //文件夹不存在则自动创建
+            //フォルダが存在しない場合は、自動的に作成されます
             File tempFile = new File(path);
             if (!tempFile.getParentFile().exists()) {
                 tempFile.getParentFile().mkdirs();
@@ -72,11 +70,11 @@ public class ImageChangeUtils {
 
     public static void joinImage(File fromFile,File toFile,String path){
         try {
-            Integer allWidth = 0;	// 图片总宽度
-            Integer w1 = 0;	// 图片1宽度
-            Integer w2 = 0;	// 图片2宽度
-            Integer h1 = 0;	// 图片1高度
-            Integer h2 = 0;	// 图片2高度
+            Integer allWidth = 0;	// 画像の全幅
+            Integer w1 = 0;
+            Integer w2 = 0;
+            Integer h1 = 0;
+            Integer h2 = 0;
 
             BufferedImage fromRead = ImageIO.read(fromFile);
             BufferedImage toRead = ImageIO.read(toFile);
@@ -92,7 +90,7 @@ public class ImageChangeUtils {
 //            g.setColor(Color.WHITE);
 //            g.fillRect(0,0,allWidth,hh);
 
-            // 横向合成
+            // 水平方向の構成
             g.drawImage(fromRead, 0, 0, null);
 //          g.setColor(Color.BLACK);
             g.drawRect(w1, 0, w1, hh);
